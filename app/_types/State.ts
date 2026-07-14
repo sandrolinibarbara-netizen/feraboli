@@ -71,6 +71,7 @@ export interface State {
     coveringLength: number | undefined,
     secondCoveringLength: number | undefined,
     halfPurlins: number | undefined,
+    secondHalfPurlins: number | undefined,
     domeHeight: number | undefined,
     domeWidth: number | undefined,
     pillarsHeight: Pillar[],

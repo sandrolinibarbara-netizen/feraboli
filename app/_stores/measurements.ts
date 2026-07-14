@@ -114,10 +114,12 @@ export const useMeasurementsStore = create<State>((set, get) => ({
                 state.secondBeamMaxHeight = (state.secondRoofIncline.percentage * (halfWidth + 0.5)) / 100;
                 state.secondBeamLength = Math.sqrt(Math.pow(state.secondBeamMaxHeight, 2) + Math.pow(halfWidth + 0.5, 2));
                 state.secondCoveringLength = state.secondBeamLength;
+                state.secondHalfPurlins = Math.ceil(state.secondCoveringLength / 1.5);
             } else {
                 state.secondBeamMaxHeight = undefined;
                 state.secondBeamLength = undefined;
                 state.secondCoveringLength = undefined;
+                state.secondHalfPurlins = undefined;
             }
 
             // DOME
@@ -151,7 +153,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
                 state.coveringLength = state.beamLength - (state.domeWidth! / 2);
             }
 
-            state.halfPurlins = Math.floor(state.coveringLength);
+            state.halfPurlins = Math.ceil(state.coveringLength / 1.5);
 
             const halfPillars = Math.ceil(Number(state.pillars) / 2);
             // pillars height, BUT ALSO pillars position
@@ -214,6 +216,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
     coveringLength: undefined,
     secondCoveringLength: undefined,
     halfPurlins: undefined,
+    secondHalfPurlins: undefined,
     domeHeight: undefined,
     domeWidth: undefined,
     pillarsHeight: []

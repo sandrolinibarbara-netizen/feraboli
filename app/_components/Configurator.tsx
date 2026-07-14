@@ -40,28 +40,27 @@ export default function Configurator() {
     const localPlaneLeft = new THREE.Plane( new THREE.Vector3( - 1, 0, 0 ));
     const localPlaneRight = new THREE.Plane( new THREE.Vector3( 1, 0, 0 ));
 
-    const structureModels = useMemo((): Geometry => {
-        const baseModel = useGLTF('/pilastro.glb');
-        return {
-            domeCoveringRight: (baseModel.scene.children[10] as THREE.Mesh).geometry,
-            domeCoveringLeft: (baseModel.scene.children[9] as THREE.Mesh).geometry,
-            domePurlinsRight: (baseModel.scene.children[11] as THREE.Mesh).geometry,
-            domePurlinsCentral: (baseModel.scene.children[12] as THREE.Mesh).geometry,
-            domePurlinsLeft: (baseModel.scene.children[12] as THREE.Mesh).geometry,
-            domeBeamsRight: (baseModel.scene.children[8] as THREE.Mesh).geometry,
-            domeBeamsLeft: (baseModel.scene.children[8] as THREE.Mesh).geometry,
-            domePillarsRight: (baseModel.scene.children[7] as THREE.Mesh).geometry,
-            domePillarsLeft: (baseModel.scene.children[7] as THREE.Mesh).geometry,
-            coveringRight: (baseModel.scene.children[3] as THREE.Mesh).geometry,
-            coveringLeft: (baseModel.scene.children[4] as THREE.Mesh).geometry,
-            purlinsRight: (baseModel.scene.children[5] as THREE.Mesh).geometry,
-            purlinsLeft: (baseModel.scene.children[6] as THREE.Mesh).geometry,
-            beamsRight: (baseModel.scene.children[1] as THREE.Mesh).geometry,
-            beamsLeft: (baseModel.scene.children[1] as THREE.Mesh).geometry,
-            pillars: (baseModel.scene.children[0] as THREE.Mesh).geometry,
-            bases: (baseModel.scene.children[2] as THREE.Mesh).geometry,
-        }
-    }, []);
+
+    const baseModel = useGLTF('/pilastro.glb');
+    const structureModels = {
+        domeCoveringRight: (baseModel.scene.children[10] as THREE.Mesh).geometry,
+        domeCoveringLeft: (baseModel.scene.children[9] as THREE.Mesh).geometry,
+        domePurlinsRight: (baseModel.scene.children[11] as THREE.Mesh).geometry,
+        domePurlinsCentral: (baseModel.scene.children[12] as THREE.Mesh).geometry,
+        domePurlinsLeft: (baseModel.scene.children[12] as THREE.Mesh).geometry,
+        domeBeamsRight: (baseModel.scene.children[8] as THREE.Mesh).geometry,
+        domeBeamsLeft: (baseModel.scene.children[8] as THREE.Mesh).geometry,
+        domePillarsRight: (baseModel.scene.children[7] as THREE.Mesh).geometry,
+        domePillarsLeft: (baseModel.scene.children[7] as THREE.Mesh).geometry,
+        coveringRight: (baseModel.scene.children[3] as THREE.Mesh).geometry,
+        coveringLeft: (baseModel.scene.children[4] as THREE.Mesh).geometry,
+        purlinsRight: (baseModel.scene.children[5] as THREE.Mesh).geometry,
+        purlinsLeft: (baseModel.scene.children[6] as THREE.Mesh).geometry,
+        beamsRight: (baseModel.scene.children[1] as THREE.Mesh).geometry,
+        beamsLeft: (baseModel.scene.children[1] as THREE.Mesh).geometry,
+        pillars: (baseModel.scene.children[0] as THREE.Mesh).geometry,
+        bases: (baseModel.scene.children[2] as THREE.Mesh).geometry,
+    }
 
     useEffect(() => {
         setGeometry(structureModels);
