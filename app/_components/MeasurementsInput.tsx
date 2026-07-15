@@ -31,6 +31,7 @@ export default function MeasurementsInput() {
         length: '',
         width: '',
         interaxleLength: '',
+        dome: ''
     });
 
     function editPillars(n:number) {
@@ -186,35 +187,63 @@ export default function MeasurementsInput() {
                 break;
         }
     }
-    function editInsulation(n:number) {
-        const insulationArr = ["5G", "L", "FC"];
+    function editDome(n: number) {
+            const domeArr = ["D", "S", "DT"];
 
-        switch(n) {
-            case 0:
-                let newMinValue;
-                if(insulation === '') {
-                    newMinValue = insulationArr[insulationArr.length - 1];
-                } else if(insulationArr.indexOf(insulation) === 0) {
-                    newMinValue = insulationArr[insulationArr.length - 1];
-                } else {
-                    newMinValue = insulationArr[insulationArr.indexOf(insulation) - 1]
-                }
-                console.log(newMinValue)
-                setInsulation(newMinValue);
-                break;
-            case 1:
-                let newMaxValue;
-                if(insulation === '') {
-                    newMaxValue = insulationArr[0];
-                } else if(insulationArr.indexOf(insulation) === insulationArr.length - 1) {
-                    newMaxValue = insulationArr[0];
-                } else {
-                    newMaxValue = insulationArr[insulationArr.indexOf(insulation) + 1]
-                }
-                setInsulation(newMaxValue);
-                break;
-        }
+            switch(n) {
+                case 0:
+                    let newMinValue;
+                    if(measurements.dome === '') {
+                        newMinValue = domeArr[domeArr.length - 1];
+                    } else if(domeArr.indexOf(measurements.dome) === 0) {
+                        newMinValue = domeArr[domeArr.length - 1];
+                    } else {
+                        newMinValue = domeArr[domeArr.indexOf(measurements.dome) - 1]
+                    }
+                    setMeasurements({...measurements, dome: newMinValue});
+                    break;
+                case 1:
+                    let newMaxValue;
+                    if(measurements.dome === '') {
+                        newMaxValue = domeArr[0];
+                    } else if(domeArr.indexOf(measurements.dome) === domeArr.length - 1) {
+                        newMaxValue = domeArr[0];
+                    } else {
+                        newMaxValue = domeArr[domeArr.indexOf(measurements.dome) + 1]
+                    }
+                    setMeasurements({...measurements, dome: newMaxValue});
+                    break;
+            }
     }
+    // function editInsulation(n:number) {
+    //     const insulationArr = ["5G", "L", "FC"];
+    //
+    //     switch(n) {
+    //         case 0:
+    //             let newMinValue;
+    //             if(insulation === '') {
+    //                 newMinValue = insulationArr[insulationArr.length - 1];
+    //             } else if(insulationArr.indexOf(insulation) === 0) {
+    //                 newMinValue = insulationArr[insulationArr.length - 1];
+    //             } else {
+    //                 newMinValue = insulationArr[insulationArr.indexOf(insulation) - 1]
+    //             }
+    //             console.log(newMinValue)
+    //             setInsulation(newMinValue);
+    //             break;
+    //         case 1:
+    //             let newMaxValue;
+    //             if(insulation === '') {
+    //                 newMaxValue = insulationArr[0];
+    //             } else if(insulationArr.indexOf(insulation) === insulationArr.length - 1) {
+    //                 newMaxValue = insulationArr[0];
+    //             } else {
+    //                 newMaxValue = insulationArr[insulationArr.indexOf(insulation) + 1]
+    //             }
+    //             setInsulation(newMaxValue);
+    //             break;
+    //     }
+    // }
     function editSubInsulation(n:number) {
         const subInsulationArr = ["DL", "V"];
 
@@ -289,22 +318,38 @@ export default function MeasurementsInput() {
 
         return label;
     }
-    function setInsulationLabel(s:string) {
-        let label = insulation;
+    function setDomeLabel(s:string) {
+        let label = measurements.dome;
         switch(s) {
-            case "5G":
-                label = "5 greche";
+            case "D":
+                label = "Pannello a 2 falde";
                 break;
-            case "FC":
-                label = "Finto coppo";
+            case "S":
+                label = "Shed";
                 break;
-            case "L":
-                label = "Lamiera";
+            case "DT":
+                label = "Traslucido a 2 falde";
                 break;
         }
 
         return label;
     }
+    // function setInsulationLabel(s:string) {
+    //     let label = insulation;
+    //     switch(s) {
+    //         case "5G":
+    //             label = "5 greche";
+    //             break;
+    //         case "FC":
+    //             label = "Finto coppo";
+    //             break;
+    //         case "L":
+    //             label = "Lamiera";
+    //             break;
+    //     }
+    //
+    //     return label;
+    // }
     function setSubInsulationLabel(s:string) {
         let label = subInsulation;
         switch(s) {
@@ -418,7 +463,8 @@ export default function MeasurementsInput() {
                                             <div className="flex gap-2">
                                                 <button onClick={() => editPillars(0)}
                                                         className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
-                                                    <Image src="/minus.svg" alt="icona elemento precedente" width={12} height={12} aria-hidden/>
+                                                    <Image src="/minus.svg" alt="icona elemento precedente" width={12}
+                                                           height={12} aria-hidden/>
                                                 </button>
                                                 <div
                                                     className="flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
@@ -426,7 +472,8 @@ export default function MeasurementsInput() {
                                                 </div>
                                                 <button onClick={() => editPillars(1)}
                                                         className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
-                                                    <Image src="/plus.svg" alt="icona elemento precedente" width={12} height={12} aria-hidden/>
+                                                    <Image src="/plus.svg" alt="icona elemento precedente" width={12}
+                                                           height={12} aria-hidden/>
                                                 </button>
                                             </div>
                                         </div>
@@ -438,7 +485,8 @@ export default function MeasurementsInput() {
                                                 <div className="flex gap-2">
                                                     <button onClick={() => editPitches(0, Number(measurements.pillars))}
                                                             className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
-                                                        <Image src="/prev.svg" alt="icona elemento precedente" width={16} height={16} aria-hidden/>
+                                                        <Image src="/prev.svg" alt="icona elemento precedente"
+                                                               width={16} height={16} aria-hidden/>
                                                     </button>
                                                     <div
                                                         className="flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
@@ -446,7 +494,8 @@ export default function MeasurementsInput() {
                                                     </div>
                                                     <button onClick={() => editPitches(1, Number(measurements.pillars))}
                                                             className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
-                                                        <Image src="/next.svg" alt="icona elemento successivo" width={16} height={16} aria-hidden/>
+                                                        <Image src="/next.svg" alt="icona elemento successivo"
+                                                               width={16} height={16} aria-hidden/>
                                                     </button>
                                                 </div>
                                             </div>
@@ -459,7 +508,8 @@ export default function MeasurementsInput() {
                                                 <div className="flex gap-2">
                                                     <button onClick={() => editStructures(0)}
                                                             className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
-                                                        <Image src="/prev.svg" alt="icona elemento precedente" width={16} height={16} aria-hidden/>
+                                                        <Image src="/prev.svg" alt="icona elemento precedente"
+                                                               width={16} height={16} aria-hidden/>
                                                     </button>
                                                     <div
                                                         className="flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
@@ -467,7 +517,8 @@ export default function MeasurementsInput() {
                                                     </div>
                                                     <button onClick={() => editStructures(1)}
                                                             className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
-                                                        <Image src="/next.svg" alt="icona elemento successivo" width={16} height={16} aria-hidden/>
+                                                        <Image src="/next.svg" alt="icona elemento successivo"
+                                                               width={16} height={16} aria-hidden/>
                                                     </button>
                                                 </div>
                                             </div>
@@ -536,6 +587,56 @@ export default function MeasurementsInput() {
                                     </div>
                                 </AccordionDetails>
                             </Accordion>
+
+                            <div aria-hidden className="bg-primary h-[2px] w-full"></div>
+
+                            <div className="mt-4">
+                                <Accordion
+                                    sx={{
+                                        '& .MuiAccordionDetails-root': {
+                                            padding: "0 0 24px 0"
+                                        },
+                                        '& .MuiAccordionSummary-root': {
+                                            padding: "0"
+                                        },
+                                        '& .MuiPaper-root-MuiAccordion-root:last-of-type': {
+                                            borderRadius: "0"
+                                        },
+                                        boxShadow: "none",
+                                        color: '#48484f'
+                                    }}>
+                                    <AccordionSummary
+                                        expandIcon={<ExpandMore/>}
+                                    >
+                                        <h3 className="uppercase font-semibold text-sm">Cupolino</h3>
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                        <div className="text-xs border-t border-t-primary pt-4">
+                                            <div className="flex gap-4 mt-2">
+                                                <div
+                                                    className="flex gap-2 w-full">
+                                                    <button onClick={() => editDome(0)}
+                                                            className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
+                                                        <Image src="/prev.svg" alt="icona elemento precedente"
+                                                               width={16}
+                                                               height={16} aria-hidden/>
+                                                    </button>
+                                                    <div
+                                                        className="uppercase flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
+                                                        {measurements.dome === '' ? '-' : setDomeLabel(measurements.dome)}
+                                                    </div>
+                                                    <button onClick={() => editDome(1)}
+                                                            className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
+                                                        <Image src="/next.svg" alt="icona elemento successivo"
+                                                               width={16}
+                                                               height={16} aria-hidden/>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </AccordionDetails>
+                                </Accordion>
+                            </div>
 
                             <div aria-hidden className="bg-primary h-[2px] w-full"></div>
 
@@ -626,7 +727,7 @@ export default function MeasurementsInput() {
                                                 '& .MuiInputBase-input': {
                                                     padding: "8px !important"
                                                 }
-                                            }} >
+                                            }}>
                                                 <Select
                                                     id="demo-simple-select"
                                                     value={insulation}
@@ -655,7 +756,8 @@ export default function MeasurementsInput() {
                                             <div className={`${insulation === '5G' ? 'block' : 'hidden'} flex gap-2`}>
                                                 <button onClick={() => editSubInsulation(0)}
                                                         className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
-                                                    <Image src="/prev.svg" alt="icona elemento precedente" width={16} height={16} aria-hidden/>
+                                                    <Image src="/prev.svg" alt="icona elemento precedente" width={16}
+                                                           height={16} aria-hidden/>
                                                 </button>
                                                 <div
                                                     className="uppercase flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
@@ -663,7 +765,8 @@ export default function MeasurementsInput() {
                                                 </div>
                                                 <button onClick={() => editSubInsulation(1)}
                                                         className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
-                                                    <Image src="/next.svg" alt="icona elemento successivo" width={16} height={16} aria-hidden/>
+                                                    <Image src="/next.svg" alt="icona elemento successivo" width={16}
+                                                           height={16} aria-hidden/>
                                                 </button>
                                             </div>
 

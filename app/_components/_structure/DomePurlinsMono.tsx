@@ -4,7 +4,7 @@ import {InstancedMesh} from "three";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {State} from "@/app/_types/State";
 
-export default function DomePurlinsRight({material} : {material : THREE.Material}) {
+export default function DomePurlinsMono({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
     const domeWidth = useMeasurementsStore((state: State) => state.domeWidth);
     const eavesHeight = useMeasurementsStore((state: State) => state.eavesHeight);
@@ -15,30 +15,46 @@ export default function DomePurlinsRight({material} : {material : THREE.Material
     const domeHeight = useMeasurementsStore((state: State) => state.domeHeight);
 
     const p = width
-        ? (width >= 35 ? 2 : 1)
-        : undefined;
+                                ? (width >= 35 ? 5 : 3)
+                                : undefined;
 
     const ref = useRef<THREE.Mesh|null>(null);
-    const purlinGeometry = baseModel?.domePurlinsRight;
+    const purlinGeometry = baseModel?.domePurlinsLeft;
 
-    const DOMEPURLINSRIGHT = () => {
+    const DOMEPURLINSLEFT = () => {
         useLayoutEffect(() => {
             if (ref.current && domeWidth && eavesHeight && roofIncline.percentage && length && beamMaxHeight && domeHeight && p) {
                 const mesh = new THREE.Object3D();
+                const purlinGap = domeWidth / 4;
 
                 for (let i = 0; i < p; i++) {
-                    const smallB = i === 1 ? (domeWidth/4) : 0;
-                    const h = smallB * Math.sin(roofIncline.rad!);
-                    const maxPurlinH = ((domeWidth / 2)) * Math.sin(roofIncline.rad!);
-                    const purlinHeight = eavesHeight + beamMaxHeight + 0.25 + (domeHeight - maxPurlinH) + h;
 
-                    const b = Math.sqrt(Math.pow((domeWidth / 2), 2) - Math.pow(maxPurlinH, 2));
-                    const pPos = i === 1 ? b/2 : b;
+                    const ip = i === p - 1
+                                    ? (domeWidth / 2) / Math.cos(roofIncline.rad!)
+                                    : i === 0
+                                        ? (domeWidth / 2 - 0.1) / Math.cos(roofIncline.rad!)
+                                        : (domeWidth / 4) / Math.cos(roofIncline.rad!);
+                    const hToAdd = (p === 5 && i === 2) || (p === 3 && i === 1) ? 0 : ip * Math.sin(roofIncline.rad!);
+
+                    const purlinHeight = i === p-1 || (p === 5 && i === 3)
+                                                ? eavesHeight + beamMaxHeight + 0.25 + domeHeight + hToAdd
+                                                : eavesHeight + beamMaxHeight + 0.25 + domeHeight - hToAdd;
+
+                    // const b = Math.sqrt(Math.pow((domeWidth / 2), 2) - Math.pow(maxPurlinH, 2));
+                    const pPos = i === p-1
+                                        ? domeWidth / 2
+                                        : (p === 5 && i === 2) || (p === 3 && i === 1)
+                                            ? 0
+                                            : (p === 5 && i === 3)
+                                                ? (domeWidth / 2) - purlinGap
+                                                : (p === 5 && i === 1)
+                                                    ? -(domeWidth / 2) + purlinGap
+                                                    : -(domeWidth / 2 - 0.1);
                     mesh.scale.z = length + 1;
                     const shift = ref.current.geometry.boundingBox!.min.x;
                     ref.current.geometry.translate(-shift, 0, 0);
                     mesh.position.set(pPos, purlinHeight, -length / 2);
-                    mesh.rotation.set(0, Math.PI, roofIncline.rad!);
+                    mesh.rotation.set(0, Math.PI, -roofIncline.rad!);
                     ref.current.geometry.attributes.position.needsUpdate = true;
                     mesh.updateMatrix();
                     (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
@@ -52,10 +68,10 @@ export default function DomePurlinsRight({material} : {material : THREE.Material
 
         return (
             <instancedUniformsMesh ref={ref}
-                                   args={[purlinGeometry, material, Math.floor((domeWidth / 2) / 0.5)]}></instancedUniformsMesh>
+                                   args={[purlinGeometry, material, p]}></instancedUniformsMesh>
         )
     }
 
     // eslint-disable-next-line react-hooks/static-components
-    return <DOMEPURLINSRIGHT/>
+    return <DOMEPURLINSLEFT/>
 }

@@ -6,6 +6,7 @@ import {State} from "@/app/_types/State";
 
 export default function BeamsLeft({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
+    const pillars = useMeasurementsStore((state: State) => state.pillars);
     const pitches = useMeasurementsStore((state: State) => state.pitches);
     const beamLength = useMeasurementsStore((state: State) => state.beamLength);
     const eavesHeight = useMeasurementsStore((state: State) => state.eavesHeight);
@@ -34,11 +35,11 @@ export default function BeamsLeft({material} : {material : THREE.Material}) {
                     mesh.updateMatrix();
                     (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
                 }
-            } else if (ref.current && beamLength && eavesHeight && roofIncline.percentage && width && length && interaxleLength) {
+            } else if (ref.current && beamLength && eavesHeight && roofIncline.percentage && width && length && interaxleLength && pillars) {
                 const mesh = new THREE.Object3D();
 
                 for (let i = 0; i < (length / interaxleLength) + 1; i++) {
-                    mesh.scale.x = pitches?.includes('M') ? beamLength : beamLength + 1;
+                    mesh.scale.x = pillars < 3 && pitches?.includes('M') ? beamLength : beamLength + 1;
                     const shift = ref.current.geometry.boundingBox!.max.x;
                     ref.current.geometry.translate(-shift, 0, 0);
                     mesh.position.set(-width / 2, eavesHeight, i === 0 ? 0 : -interaxleLength * i);

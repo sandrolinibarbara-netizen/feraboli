@@ -1,11 +1,11 @@
 'use client'
-import React, {useEffect, useMemo} from 'react'
+import React, {useEffect} from 'react'
 import * as THREE from "three";
 import {Plane, useGLTF, useTexture} from "@react-three/drei";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {Geometry, State} from "@/app/_types/State";
 import {InstancedUniformsMesh} from 'three-instanced-uniforms-mesh';
-import {extend, useThree} from '@react-three/fiber';
+import {extend} from '@react-three/fiber';
 import Bases from "@/app/_components/_structure/Bases";
 import Pillars from "@/app/_components/_structure/Pillars";
 import BeamsRight from "@/app/_components/_structure/BeamsRight";
@@ -23,23 +23,23 @@ import DomePurlinsRight from "@/app/_components/_structure/DomePurlinsRight";
 import DomePurlinsCentral from "@/app/_components/_structure/DomePurlinsCentral";
 import DomeCoveringRight from "@/app/_components/_structure/DomeCoveringRight";
 import DomeCoveringLeft from "@/app/_components/_structure/DomeCoveringLeft";
+import DomeCoveringMono from "@/app/_components/_structure/DomeCoveringMono";
+import DomeBeamMono from "@/app/_components/_structure/DomeBeamMono";
+import DomePurlinsMono from "@/app/_components/_structure/DomePurlinsMono";
 extend({InstancedUniformsMesh});
 
 export default function Configurator() {
-
-    const { camera } = useThree();
-    console.log(camera.position);
 
     const pillars = useMeasurementsStore((state: State) => state.pillars);
     const pitches = useMeasurementsStore((state: State) => state.pitches);
     const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
+    const domeType = useMeasurementsStore((state: State) => state.domeType);
+
     const setGeometry = useMeasurementsStore((state: State) => state.setGeometry);
 
-
-    const localPlaneLeft = new THREE.Plane( new THREE.Vector3( - 1, 0, 0 ));
-    const localPlaneRight = new THREE.Plane( new THREE.Vector3( 1, 0, 0 ));
-
+    const localPlaneLeft = new THREE.Plane( new THREE.Vector3( -1, 0, 0 ), 0);
+    const localPlaneRight = new THREE.Plane( new THREE.Vector3( 1, 0, 0 ), 0);
 
     const baseModel = useGLTF('/pilastro.glb');
     const structureModels = {
@@ -51,7 +51,7 @@ export default function Configurator() {
         domeBeamsRight: (baseModel.scene.children[8] as THREE.Mesh).geometry,
         domeBeamsLeft: (baseModel.scene.children[8] as THREE.Mesh).geometry,
         domePillarsRight: (baseModel.scene.children[7] as THREE.Mesh).geometry,
-        domePillarsLeft: (baseModel.scene.children[7] as THREE.Mesh).geometry,
+        domePillarsLeft: (baseModel.scene.children[13] as THREE.Mesh).geometry,
         coveringRight: (baseModel.scene.children[3] as THREE.Mesh).geometry,
         coveringLeft: (baseModel.scene.children[4] as THREE.Mesh).geometry,
         purlinsRight: (baseModel.scene.children[5] as THREE.Mesh).geometry,
@@ -61,6 +61,8 @@ export default function Configurator() {
         pillars: (baseModel.scene.children[0] as THREE.Mesh).geometry,
         bases: (baseModel.scene.children[2] as THREE.Mesh).geometry,
     }
+
+    console.log(baseModel.scene.children[8])
 
     useEffect(() => {
         setGeometry(structureModels);
@@ -81,20 +83,29 @@ export default function Configurator() {
             <Plane args={[width ? width + 10 : 0, length ? length + 10 : 0]} rotation={[-Math.PI/2, 0,0]} position={[0, 0, length ? -length/2 : 0]}/>
             {pillars &&
                 <>
-                    <DomeCoveringLeft material={redMatcapMaterialClippedLeft}/>
-                    <DomeCoveringRight material={redMatcapMaterialClippedRight}/>
-                    <DomePurlinsCentral material={matcapMaterial}/>
-                    <DomePurlinsLeft material={matcapMaterial}/>
-                    <DomePurlinsRight material={matcapMaterial}/>
-                    <DomeBeamsLeft material={matcapMaterialClippedLeft}/>
-                    <DomeBeamsRight material={matcapMaterialClippedRight}/>
+                    { domeType === 'S'
+                        ? <>
+                            <DomeCoveringMono material={matcapMaterial}/>
+                            <DomePurlinsMono material={matcapMaterial}/>
+                            <DomeBeamMono material={matcapMaterial}/>
+                          </>
+                        : <>
+                            <DomeCoveringLeft material={redMatcapMaterialClippedLeft}/>
+                            <DomeCoveringRight material={redMatcapMaterialClippedRight}/>
+                            <DomePurlinsCentral material={matcapMaterial}/>
+                            <DomePurlinsLeft material={matcapMaterial}/>
+                            <DomePurlinsRight material={matcapMaterial}/>
+                            <DomeBeamsLeft material={matcapMaterialClippedLeft}/>
+                            <DomeBeamsRight material={matcapMaterialClippedRight}/>
+                          </>
+                    }
                     <DomePillarsRight material={matcapMaterial}/>
                     <DomePillarsLeft material={matcapMaterial}/>
                     <CoveringRight material={pillars === 1 && pitches === 'D' ? redMatcapMaterialClippedRight : redMatcapMaterial}/>
                     <CoveringLeft material={pitches?.includes('S') || (pillars === 1 && pitches === 'D') ? redMatcapMaterialClippedLeft : redMatcapMaterial}/>
                     <PurlinsRight material={matcapMaterial}/>
                     <PurlinsLeft material={matcapMaterial}/>
-                    <BeamsLeft material={pillars < 3 && pitches?.includes('M') ? matcapMaterial : matcapMaterialClippedLeft}/>
+                    <BeamsLeft material={(pillars < 3 && pitches?.includes('M')) ? matcapMaterial : matcapMaterialClippedLeft}/>
                     <BeamsRight material={matcapMaterialClippedRight}/>
                     <Pillars material={matcapMaterial}/>
                     <Bases material={matcapMaterial}/>

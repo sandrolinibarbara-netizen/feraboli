@@ -18,6 +18,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
     width: undefined,
     interaxleLength: undefined,
     interaxleWidth: undefined,
+    domeType: undefined,
     // OBJECT: %, grad e rad
     // TECNICAMENTE, anche questo sarebbe derivabile,
     // MA devono avere la possibilità di inserire misure arbitrarie
@@ -60,6 +61,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
             produce((state) => {
                 state.pillars = Number(measurements.pillars);
                 state.pitches = measurements.pitches;
+                state.domeType = measurements.dome;
 
                 // EXCEPTION: 3 PILLARS + SHED
                 if(state.pitches === 'S') {
