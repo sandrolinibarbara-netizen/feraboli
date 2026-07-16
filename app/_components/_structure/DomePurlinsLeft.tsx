@@ -14,7 +14,7 @@ export default function DomePurlinsLeft({material} : {material : THREE.Material}
     const length = useMeasurementsStore((state: State) => state.length);
     const domeHeight = useMeasurementsStore((state: State) => state.domeHeight);
 
-    const p = width
+    const purlinNumber = width
                                 ? (width >= 35 ? 2 : 1)
                                 : undefined;
 
@@ -23,10 +23,10 @@ export default function DomePurlinsLeft({material} : {material : THREE.Material}
 
     const DOMEPURLINSLEFT = () => {
         useLayoutEffect(() => {
-            if (ref.current && domeWidth && eavesHeight && roofIncline.percentage && length && beamMaxHeight && domeHeight && p) {
+            if (ref.current && domeWidth && eavesHeight && roofIncline.percentage && length && beamMaxHeight && domeHeight && purlinNumber) {
                 const mesh = new THREE.Object3D();
 
-                for (let i = 0; i < p; i++) {
+                for (let i = 0; i < purlinNumber; i++) {
                     const smallB = i === 1 ? (domeWidth/4) : 0;
                     const h = (smallB + 0.1) * Math.sin(roofIncline.rad!);
                     const maxPurlinH = ((domeWidth / 2)) * Math.sin(roofIncline.rad!);
@@ -52,7 +52,7 @@ export default function DomePurlinsLeft({material} : {material : THREE.Material}
 
         return (
             <instancedUniformsMesh ref={ref}
-                                   args={[purlinGeometry, material, p]}></instancedUniformsMesh>
+                                   args={[purlinGeometry, material, purlinNumber]}></instancedUniformsMesh>
         )
     }
 

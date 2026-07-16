@@ -14,7 +14,7 @@ export default function DomePurlinsMono({material} : {material : THREE.Material}
     const length = useMeasurementsStore((state: State) => state.length);
     const domeHeight = useMeasurementsStore((state: State) => state.domeHeight);
 
-    const p = width
+    const purlinNumber = width
                                 ? (width >= 35 ? 5 : 3)
                                 : undefined;
 
@@ -23,31 +23,31 @@ export default function DomePurlinsMono({material} : {material : THREE.Material}
 
     const DOMEPURLINSLEFT = () => {
         useLayoutEffect(() => {
-            if (ref.current && domeWidth && eavesHeight && roofIncline.percentage && length && beamMaxHeight && domeHeight && p) {
+            if (ref.current && domeWidth && eavesHeight && roofIncline.percentage && length && beamMaxHeight && domeHeight && purlinNumber) {
                 const mesh = new THREE.Object3D();
                 const purlinGap = domeWidth / 4;
 
-                for (let i = 0; i < p; i++) {
+                for (let i = 0; i < purlinNumber; i++) {
 
-                    const ip = i === p - 1
+                    const ip = i === purlinNumber - 1
                                     ? (domeWidth / 2) / Math.cos(roofIncline.rad!)
                                     : i === 0
                                         ? (domeWidth / 2 - 0.1) / Math.cos(roofIncline.rad!)
                                         : (domeWidth / 4) / Math.cos(roofIncline.rad!);
-                    const hToAdd = (p === 5 && i === 2) || (p === 3 && i === 1) ? 0 : ip * Math.sin(roofIncline.rad!);
+                    const hToAdd = (purlinNumber === 5 && i === 2) || (purlinNumber === 3 && i === 1) ? 0 : ip * Math.sin(roofIncline.rad!);
 
-                    const purlinHeight = i === p-1 || (p === 5 && i === 3)
+                    const purlinHeight = i === purlinNumber-1 || (purlinNumber === 5 && i === 3)
                                                 ? eavesHeight + beamMaxHeight + 0.25 + domeHeight + hToAdd
                                                 : eavesHeight + beamMaxHeight + 0.25 + domeHeight - hToAdd;
 
                     // const b = Math.sqrt(Math.pow((domeWidth / 2), 2) - Math.pow(maxPurlinH, 2));
-                    const pPos = i === p-1
+                    const pPos = i === purlinNumber-1
                                         ? domeWidth / 2
-                                        : (p === 5 && i === 2) || (p === 3 && i === 1)
+                                        : (purlinNumber === 5 && i === 2) || (purlinNumber === 3 && i === 1)
                                             ? 0
-                                            : (p === 5 && i === 3)
+                                            : (purlinNumber === 5 && i === 3)
                                                 ? (domeWidth / 2) - purlinGap
-                                                : (p === 5 && i === 1)
+                                                : (purlinNumber === 5 && i === 1)
                                                     ? -(domeWidth / 2) + purlinGap
                                                     : -(domeWidth / 2 - 0.1);
                     mesh.scale.z = length + 1;
@@ -68,7 +68,7 @@ export default function DomePurlinsMono({material} : {material : THREE.Material}
 
         return (
             <instancedUniformsMesh ref={ref}
-                                   args={[purlinGeometry, material, p]}></instancedUniformsMesh>
+                                   args={[purlinGeometry, material, purlinNumber]}></instancedUniformsMesh>
         )
     }
 

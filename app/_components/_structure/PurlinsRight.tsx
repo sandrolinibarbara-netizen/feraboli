@@ -14,6 +14,7 @@ export default function PurlinsRight({material} : {material : THREE.Material}) {
     const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
     const coveringLength = useMeasurementsStore((state: State) => state.coveringLength);
+    const purlinType = useMeasurementsStore((state: State) => state.purlinType);
 
     const ref = useRef<THREE.Mesh|null>(null);
     const purlinGeometry = baseModel?.purlinsRight;
@@ -29,13 +30,14 @@ export default function PurlinsRight({material} : {material : THREE.Material}) {
                 const purlinGap = (((coveringLength) / halfPurlins) + 0.1) > 1.52
                     ? (((coveringLength) / halfPurlins) + 0.1)
                     : 1.52;
+                const purlinOffset = purlinType === 'light' ? 0.21 : 0;
 
                 for(let i = 0; i < halfPurlins; i++) {
                     const h = ((purlinGap * i) + 0.1) * Math.sin(roofIncline.rad!);
                     const b = Math.sqrt(Math.pow((purlinGap * i), 2) - Math.pow(h, 2))
                     const purlinHeight = i === halfPurlins - 1
-                                                        ? eavesHeight + height
-                                                        : eavesHeight + h;
+                                                        ? eavesHeight + height - purlinOffset
+                                                        : eavesHeight + h - purlinOffset;
 
                     const purlinPos = i === 0
                         ? (width / 2) - 0.1

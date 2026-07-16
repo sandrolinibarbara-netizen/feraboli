@@ -19,6 +19,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
     interaxleLength: undefined,
     interaxleWidth: undefined,
     domeType: undefined,
+    purlinType: undefined,
     // OBJECT: %, grad e rad
     // TECNICAMENTE, anche questo sarebbe derivabile,
     // MA devono avere la possibilità di inserire misure arbitrarie
@@ -62,6 +63,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
                 state.pillars = Number(measurements.pillars);
                 state.pitches = measurements.pitches;
                 state.domeType = measurements.dome;
+                state.purlinType = measurements.purlin;
 
                 // EXCEPTION: 3 PILLARS + SHED
                 if(state.pitches === 'S') {
@@ -152,7 +154,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
                 state.coveringLength = state.beamLength;
             // ALL OTHER CASES
             } else {
-                state.coveringLength = state.beamLength - (state.domeWidth! / 2);
+                state.coveringLength = state.beamLength - (state.domeWidth! / 2) + 0.5;
             }
 
             state.halfPurlins = Math.ceil(state.coveringLength / 1.5);

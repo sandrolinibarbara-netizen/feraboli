@@ -29,7 +29,8 @@ export interface Measurements {
     length: string | number | undefined,
     width: string | number | undefined,
     interaxleLength: string | number | undefined,
-    dome: string | undefined
+    dome: string | undefined,
+    purlin: string | undefined
 }
 export interface Pillar {
     heightToAdd: number | undefined,
@@ -49,6 +50,7 @@ export interface State {
     interaxleLength: number | undefined,
     interaxleWidth: number | undefined,
     domeType: string | undefined,
+    purlinType: string | undefined,
     roofIncline: {
         percentage: number | undefined,
         grad: number | undefined,

@@ -18,10 +18,9 @@ export default function DomePillarsRight({material} : {material : THREE.Material
     const beamLength = useMeasurementsStore((state: State) => state.beamLength);
     const interaxleLength = useMeasurementsStore((state: State) => state.interaxleLength);
 
-    const pillarsNumber = (width && length && interaxleLength)
+    const pillarNumber = (width && length && interaxleLength)
                                                 ? (width >= 35 ? ((length / interaxleLength) + 1) * 2 : (length / interaxleLength) + 1)
                                                 : undefined;
-
 
     const ref = useRef<THREE.Mesh|null>(null);
     const domePillarGeometry = baseModel?.domePillarsRight;
@@ -34,7 +33,7 @@ export default function DomePillarsRight({material} : {material : THREE.Material
 
     const DOMEPILLARSRIGHT = () => {
         useLayoutEffect(() => {
-            if (ref.current && coveringLength && eavesHeight && roofIncline.percentage && roofIncline.rad && width && length && interaxleLength && beamLength && beamMaxHeight && domeHeight && domeWidth && domeType && pillarsNumber && domeBeamGeometry?.boundingBox && mainBeamGeometry?.boundingBox) {
+            if (ref.current && coveringLength && eavesHeight && roofIncline.percentage && roofIncline.rad && width && length && interaxleLength && beamLength && beamMaxHeight && domeHeight && domeWidth && domeType && pillarNumber && domeBeamGeometry?.boundingBox && mainBeamGeometry?.boundingBox) {
                 const mesh = new THREE.Object3D();
                 const pillarLocalHeight =
                     ref.current.geometry.boundingBox!.max.y -
@@ -47,7 +46,7 @@ export default function DomePillarsRight({material} : {material : THREE.Material
                     Math.cos(roofIncline.rad) - domeHeight - 0.25;
 
                 if(width >= 35) {
-                    for (let i = 0; i < pillarsNumber; i++) {
+                    for (let i = 0; i < pillarNumber; i++) {
                         mesh.scale.y = domeHeight;
                         const shift = ref.current.geometry.boundingBox!.max.y;
                         ref.current.geometry.translate(0, -shift, 0);
@@ -63,7 +62,7 @@ export default function DomePillarsRight({material} : {material : THREE.Material
                         (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
                     }
                 } else {
-                    for (let i = 0; i < pillarsNumber; i++) {
+                    for (let i = 0; i < pillarNumber; i++) {
                         mesh.scale.y = domeHeight;
                         const shift = ref.current.geometry.boundingBox!.max.y;
                         ref.current.geometry.translate(0, -shift, 0);
@@ -113,7 +112,7 @@ export default function DomePillarsRight({material} : {material : THREE.Material
 
         return (
             <instancedUniformsMesh ref={ref}
-                                   args={[domePillarGeometry, materialClippedRoof, pillarsNumber]}></instancedUniformsMesh>
+                                   args={[domePillarGeometry, materialClippedRoof, pillarNumber]}></instancedUniformsMesh>
         )
     }
 

@@ -31,7 +31,8 @@ export default function MeasurementsInput() {
         length: '',
         width: '',
         interaxleLength: '',
-        dome: ''
+        dome: '',
+        purlin: ''
     });
 
     function editPillars(n:number) {
@@ -640,7 +641,6 @@ export default function MeasurementsInput() {
 
                             <div aria-hidden className="bg-primary h-[2px] w-full"></div>
 
-                            {/*PER ORA QUESTI SONO FINTI*/}
                             <div className="mt-4">
                                 <Accordion
                                     sx={{
@@ -666,11 +666,15 @@ export default function MeasurementsInput() {
                                             <h4 className="flex flex-col uppercase text-xsm font-semibold">Tipologia:</h4>
                                             <div className="flex gap-4 mt-2">
                                                 <label className="flex items-center gap-2">
-                                                    <input className="accent-primary" type="radio" name="purlins-type"/>
+                                                    <input onChange={(e) => setMeasurements({...measurements, purlin: e.target.value})}
+                                                           value="normal"
+                                                           className="accent-primary" type="radio" name="purlins-type"/>
                                                     Normali
                                                 </label>
                                                 <label className="flex items-center gap-2">
-                                                    <input className="accent-primary" type="radio" name="purlins-type"/>
+                                                    <input onChange={(e) => setMeasurements({...measurements, purlin: e.target.value})}
+                                                           value="light"
+                                                           className="accent-primary" type="radio" name="purlins-type"/>
                                                     In luce
                                                 </label>
                                             </div>
@@ -696,6 +700,8 @@ export default function MeasurementsInput() {
                             </div>
 
                             <div aria-hidden className="bg-primary h-[2px] w-full"></div>
+
+                            {/*PER ORA QUESTI SONO FINTI*/}
 
                             <div className="mt-4">
                                 <Accordion

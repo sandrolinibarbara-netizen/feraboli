@@ -13,12 +13,14 @@ export default function CoveringRight({material} : {material : THREE.Material}) 
     const roofIncline = useMeasurementsStore((state: State) => state.roofIncline);
     const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
+    const purlinType = useMeasurementsStore((state: State) => state.purlinType);
 
     const ref = useRef<THREE.Mesh|null>(null);
     const coveringGeometry = baseModel?.coveringRight;
 
     const COVERINGRIGHT = () => {
         useLayoutEffect(() => {
+            const purlinOffset = purlinType === 'light' ? 0.18 : 0;
             if (ref.current && coveringLength && eavesHeight && roofIncline.percentage && width && length) {
                 const mesh = new THREE.Object3D();
 
@@ -26,7 +28,7 @@ export default function CoveringRight({material} : {material : THREE.Material}) 
                     mesh.scale.x = pillars === 1 && pitches === 'D' ? coveringLength + 1 : coveringLength;
                     const shift = ref.current.geometry.boundingBox!.min.x;
                     ref.current.geometry.translate(-shift, 0, 0);
-                    mesh.position.set(width / 2, eavesHeight, i === 0 ? 0 : (-i));
+                    mesh.position.set(width / 2, eavesHeight - purlinOffset, i === 0 ? 0 : (-i));
                     mesh.rotation.set(0, Math.PI, roofIncline.rad!)
                     ref.current.geometry.attributes.position.needsUpdate = true;
                     mesh.updateMatrix();
