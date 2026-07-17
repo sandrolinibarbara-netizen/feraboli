@@ -3,6 +3,7 @@ import * as THREE from "three";
 import {InstancedMesh} from "three";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {State} from "@/app/_types/State";
+import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 
 export default function BeamsLeft({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
@@ -16,13 +17,40 @@ export default function BeamsLeft({material} : {material : THREE.Material}) {
     const interaxleLength = useMeasurementsStore((state: State) => state.interaxleLength);
     const secondBeamLength = useMeasurementsStore((state: State) => state.secondBeamLength);
     const secondRoofIncline = useMeasurementsStore((state: State) => state.secondRoofIncline);
+    const interaxleWidth = useMeasurementsStore((state: State) => state.interaxleWidth);
+    const secondHeightOffset = useMeasurementsStore((state: State) => state.secondHeightOffset);
 
     const ref = useRef<THREE.Mesh|null>(null);
     const beamGeometry = baseModel?.beamsLeft;
+    const secondRoofValues = getDefinedValues({
+        secondBeamLength,
+        eavesHeight,
+        secondRoofInclineRad: secondRoofIncline.rad,
+        width,
+        length,
+        interaxleLength
+    });
+    const primaryRoofValues = getDefinedValues({
+        beamLength,
+        eavesHeight,
+        roofInclineRad: roofIncline.rad,
+        width,
+        length,
+        interaxleLength,
+        pillars
+    });
+    const requiredValues = secondRoofValues ?? primaryRoofValues;
+
+    if (!requiredValues) return null;
 
     const BEAMSLEFT = () => {
+        const {length, interaxleLength} = requiredValues;
+
         useLayoutEffect(() => {
-            if (ref.current && secondBeamLength && eavesHeight && secondRoofIncline.percentage && width && length && interaxleLength) {
+            if (!ref.current) return;
+
+            if (secondRoofValues) {
+                const {secondBeamLength, eavesHeight, secondRoofInclineRad, width, length, interaxleLength} = secondRoofValues;
                 const mesh = new THREE.Object3D();
 
                 for (let i = 0; i < (length / interaxleLength) + 1; i++) {
@@ -30,30 +58,35 @@ export default function BeamsLeft({material} : {material : THREE.Material}) {
                     const shift = ref.current.geometry.boundingBox!.max.x;
                     ref.current.geometry.translate(-shift, 0, 0);
                     mesh.position.set(-width / 2, eavesHeight, i === 0 ? 0 : -interaxleLength * i);
-                    mesh.rotation.set(0, Math.PI, -secondRoofIncline.rad!);
+                    mesh.rotation.set(0, Math.PI, -secondRoofInclineRad);
                     ref.current.geometry.attributes.position.needsUpdate = true;
                     mesh.updateMatrix();
                     (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
                 }
-            } else if (ref.current && beamLength && eavesHeight && roofIncline.percentage && width && length && interaxleLength && pillars) {
+
+                return;
+            }
+
+            if (primaryRoofValues) {
+                const {beamLength, eavesHeight, roofInclineRad, width, length, interaxleLength, pillars} = primaryRoofValues;
                 const mesh = new THREE.Object3D();
+
+                const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'D')
+                    ? -(interaxleWidth / 2) - 0.5
+                    : -(width / 2)
 
                 for (let i = 0; i < (length / interaxleLength) + 1; i++) {
                     mesh.scale.x = pillars < 3 && pitches?.includes('M') ? beamLength : beamLength + 1;
                     const shift = ref.current.geometry.boundingBox!.max.x;
                     ref.current.geometry.translate(-shift, 0, 0);
-                    mesh.position.set(-width / 2, eavesHeight, i === 0 ? 0 : -interaxleLength * i);
-                    mesh.rotation.set(0, Math.PI, -roofIncline.rad!);
+                    mesh.position.set(beamPosition, eavesHeight + secondHeightOffset, i === 0 ? 0 : -interaxleLength * i);
+                    mesh.rotation.set(0, Math.PI, -roofInclineRad);
                     ref.current.geometry.attributes.position.needsUpdate = true;
                     mesh.updateMatrix();
                     (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
                 }
             }
         }, []);
-
-        if (!beamLength || !eavesHeight || !roofIncline.percentage || !width || !length || !interaxleLength) {
-            return <></>
-        }
 
         return (
             <instancedUniformsMesh ref={ref}

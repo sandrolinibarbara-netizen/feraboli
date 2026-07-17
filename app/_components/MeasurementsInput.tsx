@@ -27,7 +27,7 @@ export default function MeasurementsInput() {
         structureType: '',
         roofIncline: '',
         eavesHeight: '',
-        secondEavesHeight: '',
+        secondHeight: '',
         length: '',
         width: '',
         interaxleLength: '',
@@ -79,7 +79,7 @@ export default function MeasurementsInput() {
         const pitchesTwo = ["M", "D"];
         // const pitchesTwo = ["M", "M1B", "M2B", "D"];
         const pitchesThree = ["D", "S"];
-        const pitchesFour = ["M"]
+        const pitchesFour = ["M", "D"]
 
         switch(pillars) {
             case 1:
@@ -500,6 +500,19 @@ export default function MeasurementsInput() {
                                                     </button>
                                                 </div>
                                             </div>
+                                        }
+
+                                        {Number(measurements.pillars) > 3 && measurements.pitches === 'D' &&
+
+                                            <label className="flex flex-col uppercase text-xsm font-semibold">Seconda altezza
+                                                <div className="relative font-jet text-xs lowercase after:content-['m'] after:absolute after:top-[14px] after:left-[90%]"></div>
+                                                    <input
+                                                        className="mt-2 p-1 pl-2 rounded-lg border-strokes border-2 font-jet text-xs focus:border-primary focus:outline-none focus:ring-0"
+                                                        value={measurements.secondHeight}
+                                                        name="secondHeight"
+                                                        onChange={validateInput}
+                                                    />
+                                            </label>
                                         }
 
 

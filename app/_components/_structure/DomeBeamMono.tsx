@@ -3,6 +3,7 @@ import * as THREE from "three";
 import {InstancedMesh} from "three";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {State} from "@/app/_types/State";
+import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 
 export default function DomeBeamMono({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
@@ -13,37 +14,46 @@ export default function DomeBeamMono({material} : {material : THREE.Material}) {
     const length = useMeasurementsStore((state: State) => state.length);
     const domeHeight = useMeasurementsStore((state: State) => state.domeHeight);
     const interaxleLength = useMeasurementsStore((state: State) => state.interaxleLength);
+    const secondHeightOffset = useMeasurementsStore((state: State) => state.secondHeightOffset);
 
     const ref = useRef<THREE.Mesh|null>(null);
     const domePillarGeometry = baseModel?.domeBeamsLeft;
+    const requiredValues = getDefinedValues({
+        domeWidth,
+        eavesHeight,
+        roofInclineRad: roofIncline.rad,
+        length,
+        interaxleLength,
+        beamMaxHeight,
+        domeHeight
+    });
+
+    if (!requiredValues) return null;
 
     const DOMEBEAMSLEFT = () => {
         useLayoutEffect(() => {
-            if (ref.current && domeWidth && eavesHeight && roofIncline.percentage && length && interaxleLength && beamMaxHeight && domeHeight) {
-                const mesh = new THREE.Object3D();
-                const ip = (domeWidth / 2) / Math.cos(roofIncline.rad!);
-                const hToAdd = ip * Math.sin(roofIncline.rad!);
+            if (!ref.current) return;
 
-                for (let i = 0; i < (length / interaxleLength) ; i++) {
-                    mesh.scale.x = domeWidth / Math.cos(roofIncline.rad!);
-                    const shift = ref.current.geometry.boundingBox!.max.x;
-                    ref.current.geometry.translate(-shift, 0, 0);
-                    mesh.position.set(domeWidth/2, eavesHeight + beamMaxHeight + domeHeight + 0.25 + hToAdd, -interaxleLength * i);
-                    mesh.rotation.set(0, 0, roofIncline.rad!);
-                    ref.current.geometry.attributes.position.needsUpdate = true;
-                    mesh.updateMatrix();
-                    (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
-                }
+            const {domeWidth, eavesHeight, roofInclineRad, length, interaxleLength, beamMaxHeight, domeHeight} = requiredValues;
+            const mesh = new THREE.Object3D();
+            const ip = (domeWidth / 2) / Math.cos(roofInclineRad);
+            const hToAdd = ip * Math.sin(roofInclineRad);
+
+            for (let i = 0; i < (length / interaxleLength) ; i++) {
+                mesh.scale.x = domeWidth / Math.cos(roofInclineRad);
+                const shift = ref.current.geometry.boundingBox!.max.x;
+                ref.current.geometry.translate(-shift, 0, 0);
+                mesh.position.set(domeWidth/2, eavesHeight + secondHeightOffset + beamMaxHeight + domeHeight + 0.25 + hToAdd, -interaxleLength * i);
+                mesh.rotation.set(0, 0, roofInclineRad);
+                ref.current.geometry.attributes.position.needsUpdate = true;
+                mesh.updateMatrix();
+                (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
             }
         }, []);
 
-        if (!domeWidth || !eavesHeight || !roofIncline.percentage || !length || !interaxleLength || !beamMaxHeight || !domeHeight) {
-            return <></>
-        }
-
         return (
             <instancedUniformsMesh ref={ref}
-                                   args={[domePillarGeometry, material, (length / interaxleLength)]}></instancedUniformsMesh>
+                                   args={[domePillarGeometry, material, (requiredValues.length / requiredValues.interaxleLength)]}></instancedUniformsMesh>
         )
     }
 

@@ -26,6 +26,12 @@ import DomeCoveringLeft from "@/app/_components/_structure/DomeCoveringLeft";
 import DomeCoveringMono from "@/app/_components/_structure/DomeCoveringMono";
 import DomeBeamMono from "@/app/_components/_structure/DomeBeamMono";
 import DomePurlinsMono from "@/app/_components/_structure/DomePurlinsMono";
+import CoveringRightDH from "@/app/_components/_structure/CoveringRightDH";
+import CoveringLeftDH from "@/app/_components/_structure/CoveringLeftDH";
+import PurlinsRightDH from "@/app/_components/_structure/PurlinsRightDH";
+import PurlinsLeftDH from "@/app/_components/_structure/PurlinsLeftDH";
+import BeamsLeftDH from "@/app/_components/_structure/BeamsLeftDH";
+import BeamsRightDH from "@/app/_components/_structure/BeamsRightDH";
 extend({InstancedUniformsMesh});
 
 export default function Configurator() {
@@ -35,6 +41,7 @@ export default function Configurator() {
     const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
     const domeType = useMeasurementsStore((state: State) => state.domeType);
+    const secondHeight = useMeasurementsStore((state: State) => state.secondHeight);
 
     const setGeometry = useMeasurementsStore((state: State) => state.setGeometry);
 
@@ -61,8 +68,6 @@ export default function Configurator() {
         pillars: (baseModel.scene.children[0] as THREE.Mesh).geometry,
         bases: (baseModel.scene.children[2] as THREE.Mesh).geometry,
     }
-
-    console.log(baseModel.scene.children[8])
 
     useEffect(() => {
         setGeometry(structureModels);
@@ -101,12 +106,26 @@ export default function Configurator() {
                     }
                     <DomePillarsRight material={matcapMaterial}/>
                     <DomePillarsLeft material={matcapMaterial}/>
+
+                    {
+                        pitches === 'D' && secondHeight &&
+                        <>
+                            <CoveringRightDH material={redMatcapMaterial}/>
+                            <CoveringLeftDH material={redMatcapMaterial}/>
+                            <PurlinsRightDH material={matcapMaterial}/>
+                            <PurlinsLeftDH material={matcapMaterial}/>
+                            <BeamsLeftDH material={matcapMaterial}/>
+                            <BeamsRightDH material={matcapMaterial}/>
+                        </>
+                    }
+
                     <CoveringRight material={pillars === 1 && pitches === 'D' ? redMatcapMaterialClippedRight : redMatcapMaterial}/>
                     <CoveringLeft material={pitches?.includes('S') || (pillars === 1 && pitches === 'D') ? redMatcapMaterialClippedLeft : redMatcapMaterial}/>
                     <PurlinsRight material={matcapMaterial}/>
                     <PurlinsLeft material={matcapMaterial}/>
                     <BeamsLeft material={(pillars < 3 && pitches?.includes('M')) ? matcapMaterial : matcapMaterialClippedLeft}/>
                     <BeamsRight material={matcapMaterialClippedRight}/>
+
                     <Pillars material={matcapMaterial}/>
                     <Bases material={matcapMaterial}/>
                 </>

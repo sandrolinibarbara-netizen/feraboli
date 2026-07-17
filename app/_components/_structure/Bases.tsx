@@ -3,6 +3,7 @@ import * as THREE from "three";
 import {InstancedMesh} from "three";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {State} from "@/app/_types/State";
+import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 
 export default function Bases({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
@@ -14,27 +15,33 @@ export default function Bases({material} : {material : THREE.Material}) {
 
     const ref = useRef<THREE.Mesh|null>(null);
     const baseGeometry = baseModel?.bases;
+    const requiredValues = getDefinedValues({
+        pillars,
+        pillarsHeight,
+        width,
+        length,
+        interaxleLength
+    });
+
+    if (!requiredValues) return null;
 
     const BASES = () => {
         useLayoutEffect(() => {
-            if (ref.current && pillars && pillarsHeight && width && length && interaxleLength) {
-                const mesh = new THREE.Object3D();
+            if (!ref.current) return;
 
-                for (let i = 0; i < (pillars * (length / interaxleLength)) + pillars; i++) {
-                    mesh.position.set(pillarsHeight[i - (pillars * Math.floor(i / pillars))].position! - (width / 2), 0, -interaxleLength * Math.floor(i / pillars));
-                    mesh.updateMatrix();
-                    (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
-                }
+            const {pillars, pillarsHeight, width, length, interaxleLength} = requiredValues;
+            const mesh = new THREE.Object3D();
+
+            for (let i = 0; i < (pillars * (length / interaxleLength)) + pillars; i++) {
+                mesh.position.set(pillarsHeight[i - (pillars * Math.floor(i / pillars))].position! - (width / 2), 0, -interaxleLength * Math.floor(i / pillars));
+                mesh.updateMatrix();
+                (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
             }
         }, []);
 
-        if (!pillars || !pillarsHeight || !width || !length || !interaxleLength) {
-            return <></>
-        }
-
         return (
             <instancedUniformsMesh ref={ref}
-                                   args={[baseGeometry, material, (pillars * (length / interaxleLength)) + pillars]}></instancedUniformsMesh>
+                                   args={[baseGeometry, material, (requiredValues.pillars * (requiredValues.length / requiredValues.interaxleLength)) + requiredValues.pillars]}></instancedUniformsMesh>
         )
     }
 

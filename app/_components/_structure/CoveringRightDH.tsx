@@ -5,49 +5,52 @@ import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {State} from "@/app/_types/State";
 import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 
-export default function DomeCoveringMono({material} : {material : THREE.Material}) {
+export default function CoveringRightDH({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
-    const domeWidth = useMeasurementsStore((state: State) => state.domeWidth);
+    const pillars = useMeasurementsStore((state: State) => state.pillars);
+    const pitches = useMeasurementsStore((state: State) => state.pitches);
+    const coveringLengthDH = useMeasurementsStore((state: State) => state.coveringLengthDH);
     const eavesHeight = useMeasurementsStore((state: State) => state.eavesHeight);
     const roofIncline = useMeasurementsStore((state: State) => state.roofIncline);
-    const beamMaxHeight = useMeasurementsStore((state: State) => state.beamMaxHeight);
+    const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
-    const domeHeight = useMeasurementsStore((state: State) => state.domeHeight);
-    const secondHeightOffset = useMeasurementsStore((state: State) => state.secondHeightOffset);
+    const purlinType = useMeasurementsStore((state: State) => state.purlinType);
+    const interaxleWidth = useMeasurementsStore((state: State) => state.interaxleWidth);
 
     const ref = useRef<THREE.Mesh|null>(null);
-    const coveringGeometry = baseModel?.domeCoveringLeft;
+    const coveringGeometry = baseModel?.coveringRight;
     const requiredValues = getDefinedValues({
-        domeWidth,
+        coveringLengthDH,
         eavesHeight,
         roofInclineRad: roofIncline.rad,
+        width,
         length,
-        beamMaxHeight,
-        domeHeight
+        pillars
     });
 
-    if (!requiredValues) return null;
+    if (!requiredValues || (requiredValues.pillars < 3 && pitches?.includes('M'))) {
+        return null;
+    }
 
-    const DOMECOVERINGLEFT = () => {
+    const COVERINGRIGHT = () => {
         useLayoutEffect(() => {
+            const purlinOffset = purlinType === 'light' ? 0.18 : 0;
             if (!ref.current) return;
 
-            const {domeWidth, eavesHeight, roofInclineRad, length, beamMaxHeight, domeHeight} = requiredValues;
+            const {coveringLengthDH, eavesHeight, roofInclineRad, width, length, pillars} = requiredValues;
             const mesh = new THREE.Object3D();
-            const ip = (domeWidth / 2) / Math.cos(roofInclineRad);
-            const hToAdd = ip * Math.sin(roofInclineRad);
 
             for (let i = 0; i < length + 1; i++) {
-                mesh.scale.x = domeWidth / Math.cos(roofInclineRad);
+                mesh.scale.x = pillars === 1 && pitches === 'D' ? coveringLengthDH + 1 : coveringLengthDH;
                 const shift = ref.current.geometry.boundingBox!.min.x;
                 ref.current.geometry.translate(-shift, 0, 0);
-                mesh.position.set(domeWidth/2, eavesHeight + secondHeightOffset + beamMaxHeight + domeHeight + 0.25 + hToAdd, i === 0 ? 0 : (-i));
-                mesh.rotation.set(0, Math.PI, -roofInclineRad)
+                mesh.position.set((width / 2), eavesHeight - purlinOffset, i === 0 ? 0 : (-i));
+                mesh.rotation.set(0, Math.PI, roofInclineRad)
                 ref.current.geometry.attributes.position.needsUpdate = true;
                 mesh.updateMatrix();
                 (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
             }
-        }, []);
+        }, [])
 
         return (
             <instancedUniformsMesh ref={ref} args={[coveringGeometry, material, requiredValues.length + 1]}></instancedUniformsMesh>
@@ -55,5 +58,5 @@ export default function DomeCoveringMono({material} : {material : THREE.Material
     }
 
     // eslint-disable-next-line react-hooks/static-components
-    return <DOMECOVERINGLEFT/>
+    return <COVERINGRIGHT/>
 }

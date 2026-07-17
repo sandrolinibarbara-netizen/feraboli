@@ -13,7 +13,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
     pitches: undefined,
     structureType: undefined,
     eavesHeight: undefined,
-    secondEavesHeight: undefined,
+    secondHeight: undefined,
     length: undefined,
     width: undefined,
     interaxleLength: undefined,
@@ -87,7 +87,11 @@ export const useMeasurementsStore = create<State>((set, get) => ({
                 }
 
                 state.eavesHeight = Number(measurements.eavesHeight);
-                // state.secondEavesHeight = Number(measurements.secondEavesHeight);
+                if(measurements.secondHeight !== '' && measurements.pitches === 'D') {
+                    state.secondHeight = Number(measurements.secondHeight);
+                } else {
+                    state.secondHeight = undefined;
+                }
                 state.length = Number(measurements.length);
                 state.width = Number(measurements.width);
                 state.interaxleLength = Number(measurements.interaxleLength);
@@ -98,16 +102,32 @@ export const useMeasurementsStore = create<State>((set, get) => ({
 
     // FUNCTION TO DERIVE MEASUREMENTS
     setDerivedMeasurements: (state) => {
+        state.secondHeightOffset = 0;
+
         if(state.width && state.roofIncline.percentage && state.pillars
             && state.interaxleWidth && state.eavesHeight) {
             state.pillarsHeight = [];
             const halfWidth = state.width / 2;
+
+            state.secondHeightOffset = state.secondHeight && state.pillars > 3 && state.pitches === 'D'
+                ? (halfWidth - ((state.interaxleWidth / 2) + 0.5)) * Math.tan(state.roofIncline.rad!) + state.secondHeight
+                : 0;
 
             // BEAM
             // EXCEPTION: 1 o 2 PILLARS MONO FALDA
             if(state.pillars < 3 && state.pitches?.includes('M')) {
                 state.beamMaxHeight = (state.roofIncline.percentage * state.width) / 100;
                 state.beamLength = Math.sqrt(Math.pow(state.beamMaxHeight, 2) + Math.pow(state.width, 2));
+
+            // EXCEPTION: >4 PILLARS DOUBLE HEIGHT
+            } else if(state.pillars > 3 && state.pitches?.includes('D')) {
+                state.beamMaxHeight = (state.roofIncline.percentage * (state.interaxleWidth/2 + 0.5)) / 100;
+                state.beamLength = Math.sqrt(Math.pow(state.beamMaxHeight, 2) + Math.pow((state.interaxleWidth/2 + 0.5), 2));
+
+                state.beamMaxHeightDH = (state.roofIncline.percentage * (halfWidth - state.interaxleWidth/2)) / 100;
+                state.beamLengthDH = Math.sqrt(Math.pow(state.beamMaxHeightDH, 2) + Math.pow(halfWidth - state.interaxleWidth/2, 2));
+                state.coveringLengthDH = state.beamLengthDH;
+                state.halfPurlinsDH = Math.ceil(state.coveringLengthDH / 1.5);
             // ALL OTHER CASES
             } else {
                 state.beamMaxHeight = (state.roofIncline.percentage * halfWidth) / 100;
@@ -199,7 +219,11 @@ export const useMeasurementsStore = create<State>((set, get) => ({
                     }
                 } else {
                     if(i < halfPillars) {
-                        pillar.heightToAdd = (state.roofIncline.percentage * pillar.position) / 100;
+                        if(state.secondHeight && i === halfPillars - 1) {
+                            pillar.heightToAdd = ((state.roofIncline.percentage * pillar.position) / 100) + state.secondHeight;
+                        } else {
+                            pillar.heightToAdd = (state.roofIncline.percentage * pillar.position) / 100;
+                        }
                         pillar.totalHeight = state.eavesHeight + pillar.heightToAdd;
                     } else {
                         pillar.heightToAdd = state.pillarsHeight[i - 1 - (2 * (i - halfPillars))].heightToAdd;
@@ -214,15 +238,19 @@ export const useMeasurementsStore = create<State>((set, get) => ({
     // DERIVED MEASUREMENTS
     beamMaxHeight: undefined,
     beamLength: undefined,
+    beamMaxHeightDH: undefined,
+    beamLengthDH: undefined,
+    coveringLengthDH: undefined,
     secondBeamMaxHeight: undefined,
     secondBeamLength: undefined,
     beamPatchLength: undefined,
     coveringLength: undefined,
     secondCoveringLength: undefined,
     halfPurlins: undefined,
+    halfPurlinsDH: undefined,
     secondHalfPurlins: undefined,
     domeHeight: undefined,
     domeWidth: undefined,
+    secondHeightOffset: 0,
     pillarsHeight: []
 }))
-

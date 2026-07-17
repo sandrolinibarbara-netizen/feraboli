@@ -3,9 +3,12 @@ import * as THREE from "three";
 import {InstancedMesh} from "three";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {State} from "@/app/_types/State";
+import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 
 export default function DomePillarsLeft({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
+    const pillars = useMeasurementsStore((state: State) => state.pillars);
+    const pitches = useMeasurementsStore((state: State) => state.pitches);
     const coveringLength = useMeasurementsStore((state: State) => state.coveringLength);
     const eavesHeight = useMeasurementsStore((state: State) => state.eavesHeight);
     const roofIncline = useMeasurementsStore((state: State) => state.roofIncline);
@@ -17,6 +20,8 @@ export default function DomePillarsLeft({material} : {material : THREE.Material}
     const beamMaxHeight = useMeasurementsStore((state: State) => state.beamMaxHeight);
     const beamLength = useMeasurementsStore((state: State) => state.beamLength);
     const interaxleLength = useMeasurementsStore((state: State) => state.interaxleLength);
+    const interaxleWidth = useMeasurementsStore((state: State) => state.interaxleWidth);
+    const secondHeightOffset = useMeasurementsStore((state: State) => state.secondHeightOffset);
 
     const pillarsNumber = (width && length && interaxleLength)
                                                 ? (width >= 35 ? ((length / interaxleLength) + 1) * 2 : (length / interaxleLength) + 1)
@@ -30,99 +35,135 @@ export default function DomePillarsLeft({material} : {material : THREE.Material}
     const localPlaneInclined = new THREE.Plane( new THREE.Vector3( 0, -1, 0 ), 0);
     const materialClippedRoof = material.clone();
     materialClippedRoof.clippingPlanes = [localPlaneInclined];
+    const requiredValues = getDefinedValues({
+        coveringLength,
+        eavesHeight,
+        roofInclinePercentage: roofIncline.percentage,
+        roofInclineRad: roofIncline.rad,
+        width,
+        interaxleLength,
+        beamLength,
+        beamMaxHeight,
+        domeHeight,
+        pillarsNumber,
+        domeType,
+        domeWidth,
+        pillars,
+        domeBeamBoundingBox: domeBeamGeometry?.boundingBox,
+        mainBeamBoundingBox: mainBeamGeometry?.boundingBox
+    });
+
+    if (!requiredValues) return null;
 
     const DOMEPILLARSLEFT = () => {
-
         useLayoutEffect(() => {
-            if (ref.current && coveringLength && eavesHeight && roofIncline.percentage && roofIncline.rad && width && length && interaxleLength && beamLength && beamMaxHeight && domeHeight && pillarsNumber && domeType && domeWidth && domeBeamGeometry?.boundingBox && mainBeamGeometry?.boundingBox) {
-                const mesh = new THREE.Object3D();
-                const h = domeType === 'S' ? domeHeight * 3 : domeHeight;
-                const pillarLocalHeight =
-                    ref.current.geometry.boundingBox!.max.y -
-                    ref.current.geometry.boundingBox!.min.y;
+            if (!ref.current) return;
 
-                // Allinea la faccia inferiore del pilastro alla faccia superiore
-                // della trave principale, tenendo conto della rotazione di entrambe.
-                const pillarVerticalOffset =
-                    ((h * pillarLocalHeight) + mainBeamGeometry.boundingBox.max.y) /
-                    Math.cos(roofIncline.rad) - h - 0.25;
+            const {
+                coveringLength,
+                eavesHeight,
+                roofInclinePercentage,
+                roofInclineRad,
+                width,
+                interaxleLength,
+                beamLength,
+                beamMaxHeight,
+                domeHeight,
+                pillarsNumber,
+                domeType,
+                domeWidth,
+                pillars,
+                domeBeamBoundingBox,
+                mainBeamBoundingBox
+            } = requiredValues;
+            const mesh = new THREE.Object3D();
 
-                if(width >= 35) {
-                    for (let i = 0; i < pillarsNumber; i++) {
-                        mesh.scale.y = h;
-                        const b = h * Math.tan(roofIncline.rad!/1.5);
-                        const shift = ref.current.geometry.boundingBox!.max.y;
-                        ref.current.geometry.translate(0, -shift, 0);
-                        if(i % 2 === 0) {
-                            mesh.position.set(((beamLength - coveringLength) / 3) + b, eavesHeight + h + 0.25 + pillarVerticalOffset + ((roofIncline.percentage! * ((width / 2) - ((beamLength - coveringLength) / 3 + b))) / 100), -interaxleLength * (i/2));
-                        } else {
-                            mesh.position.set(((beamLength - coveringLength) / 3) * 2 + b, eavesHeight + h + 0.25 + pillarVerticalOffset + ((roofIncline.percentage! * ((width / 2) - (((beamLength - coveringLength) / 3) * 2 + b))) / 100), -interaxleLength * ((i-1)/2));
-                        }
+            const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'D')
+                ? (interaxleWidth / 2) + 0.5
+                : (width / 2)
 
-                        mesh.rotation.set(0, 0, -roofIncline.rad!);
-                        ref.current.geometry.attributes.position.needsUpdate = true;
-                        mesh.updateMatrix();
-                        (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
+            const h = domeType === 'S' ? domeHeight * 3 : domeHeight;
+            const pillarLocalHeight =
+                ref.current.geometry.boundingBox!.max.y -
+                ref.current.geometry.boundingBox!.min.y;
+
+            // Allinea la faccia inferiore del pilastro alla faccia superiore
+            // della trave principale, tenendo conto della rotazione di entrambe.
+            const pillarVerticalOffset =
+                ((h * pillarLocalHeight) + mainBeamBoundingBox.max.y) /
+                Math.cos(roofInclineRad) - h - 0.25;
+
+            if(width >= 35) {
+                for (let i = 0; i < pillarsNumber; i++) {
+                    mesh.scale.y = h;
+                    const b = h * Math.tan(roofInclineRad/1.5);
+                    const shift = ref.current.geometry.boundingBox!.max.y;
+                    ref.current.geometry.translate(0, -shift, 0);
+                    if(i % 2 === 0) {
+                        mesh.position.set(((beamLength - coveringLength) / 3) + b, eavesHeight + secondHeightOffset + h + 0.25 + pillarVerticalOffset + ((roofInclinePercentage * (beamPosition - ((beamLength - coveringLength) / 3 + b))) / 100), -interaxleLength * (i/2));
+                    } else {
+                        mesh.position.set(((beamLength - coveringLength) / 3) * 2 + b, eavesHeight + secondHeightOffset + h + 0.25 + pillarVerticalOffset + ((roofInclinePercentage * (beamPosition - (((beamLength - coveringLength) / 3) * 2 + b))) / 100), -interaxleLength * ((i-1)/2));
                     }
 
-                } else {
-                    for (let i = 0; i < pillarsNumber; i++) {
-                        mesh.scale.y = h;
-                        const b = domeType === 'S' ? h * Math.tan(roofIncline.rad!/1.5) : 0;
-                        const shift = ref.current.geometry.boundingBox!.max.y;
-                        ref.current.geometry.translate(0, -shift, 0);
-                        mesh.position.set((beamLength - coveringLength) / 2 + b, eavesHeight + h + 0.25 + pillarVerticalOffset + ((roofIncline.percentage! * ((width / 2) - ((beamLength - coveringLength) / 2 + b))) / 100), -interaxleLength * i);
-                        mesh.rotation.set(0, 0, -roofIncline.rad!);
-                        ref.current.geometry.attributes.position.needsUpdate = true;
-                        mesh.updateMatrix();
-                        (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
-                    }
+                    mesh.rotation.set(0, 0, -roofInclineRad);
+                    ref.current.geometry.attributes.position.needsUpdate = true;
+                    mesh.updateMatrix();
+                    (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
                 }
 
-                const isMonoDome = domeType === 'S';
-                const ip = (domeWidth / 2) / Math.cos(roofIncline.rad);
-                const hToAdd = ip * Math.sin(roofIncline.rad);
-                const beamMatrix = new THREE.Matrix4().compose(
-                    new THREE.Vector3(
-                        isMonoDome ? domeWidth / 2 : -0.05,
-                        eavesHeight + beamMaxHeight + domeHeight + 0.25 +
-                            (isMonoDome ? hToAdd : 0),
-                        0
-                    ),
-                    new THREE.Quaternion().setFromEuler(
-                        new THREE.Euler(
-                            0,
-                            isMonoDome ? 0 : Math.PI,
-                            roofIncline.rad
-                        )
-                    ),
-                    new THREE.Vector3(
-                        isMonoDome
-                            ? domeWidth / Math.cos(roofIncline.rad)
-                            : domeWidth / 2 + 0.05,
-                        1,
-                        1
-                    )
-                );
-
-                // Il piano locale coincide con la faccia inferiore della trave.
-                // applyMatrix4 lo porta nello stesso spazio mondo usato dal clipping.
-                localPlaneInclined
-                    .set(
-                        new THREE.Vector3(0, -1, 0),
-                        domeBeamGeometry.boundingBox.min.y
-                    )
-                    .applyMatrix4(beamMatrix);
+            } else {
+                for (let i = 0; i < pillarsNumber; i++) {
+                    mesh.scale.y = h;
+                    const b = domeType === 'S' ? h * Math.tan(roofInclineRad/1.5) : 0;
+                    const shift = ref.current.geometry.boundingBox!.max.y;
+                    ref.current.geometry.translate(0, -shift, 0);
+                    mesh.position.set((beamLength - coveringLength) / 2 + b, eavesHeight + secondHeightOffset + h + 0.25 + pillarVerticalOffset + ((roofInclinePercentage * (beamPosition - ((beamLength - coveringLength) / 2 + b))) / 100), -interaxleLength * i);
+                    mesh.rotation.set(0, 0, -roofInclineRad);
+                    ref.current.geometry.attributes.position.needsUpdate = true;
+                    mesh.updateMatrix();
+                    (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
+                }
             }
-        }, []);
 
-        if (!coveringLength || !eavesHeight || !roofIncline.percentage || !width || !length || !interaxleLength || !beamLength || !domeHeight || !domeType) {
-            return <></>
-        }
+            const isMonoDome = domeType === 'S';
+            const ip = (domeWidth / 2) / Math.cos(roofInclineRad);
+            const hToAdd = ip * Math.sin(roofInclineRad);
+            const beamMatrix = new THREE.Matrix4().compose(
+                new THREE.Vector3(
+                    isMonoDome ? domeWidth / 2 : -0.05,
+                    eavesHeight + beamMaxHeight + secondHeightOffset + domeHeight + 0.25 +
+                        (isMonoDome ? hToAdd : 0),
+                    0
+                ),
+                new THREE.Quaternion().setFromEuler(
+                    new THREE.Euler(
+                        0,
+                        isMonoDome ? 0 : Math.PI,
+                        roofInclineRad
+                    )
+                ),
+                new THREE.Vector3(
+                    isMonoDome
+                        ? domeWidth / Math.cos(roofInclineRad)
+                        : domeWidth / 2 + 0.05,
+                    1,
+                    1
+                )
+            );
+
+            // Il piano locale coincide con la faccia inferiore della trave.
+            // applyMatrix4 lo porta nello stesso spazio mondo usato dal clipping.
+            localPlaneInclined
+                .set(
+                    new THREE.Vector3(0, -1, 0),
+                    domeBeamBoundingBox.min.y
+                )
+                .applyMatrix4(beamMatrix);
+        }, []);
 
         return (
             <instancedUniformsMesh ref={ref}
-                                   args={[domePillarGeometry, materialClippedRoof, pillarsNumber]}></instancedUniformsMesh>
+                                   args={[domePillarGeometry, materialClippedRoof, requiredValues.pillarsNumber]}></instancedUniformsMesh>
         )
     }
 

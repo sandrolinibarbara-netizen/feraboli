@@ -5,23 +5,21 @@ import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {State} from "@/app/_types/State";
 import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 
-export default  function BeamsRight({material} : {material : THREE.Material}) {
+export default  function BeamsRightDH({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
     const pillars = useMeasurementsStore((state: State) => state.pillars);
-    const beamLength = useMeasurementsStore((state: State) => state.beamLength);
+    const beamLengthDH = useMeasurementsStore((state: State) => state.beamLengthDH);
     const pitches = useMeasurementsStore((state: State) => state.pitches);
     const eavesHeight = useMeasurementsStore((state: State) => state.eavesHeight);
     const roofIncline = useMeasurementsStore((state: State) => state.roofIncline);
     const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
     const interaxleLength = useMeasurementsStore((state: State) => state.interaxleLength);
-    const interaxleWidth = useMeasurementsStore((state: State) => state.interaxleWidth);
-    const secondHeightOffset = useMeasurementsStore((state: State) => state.secondHeightOffset);
 
     const ref = useRef<THREE.Mesh|null>(null);
     const beamGeometry = baseModel?.beamsRight;
     const requiredValues = getDefinedValues({
-        beamLength,
+        beamLengthDH,
         eavesHeight,
         roofInclineRad: roofIncline.rad,
         width,
@@ -38,17 +36,14 @@ export default  function BeamsRight({material} : {material : THREE.Material}) {
         useLayoutEffect(() => {
             if (!ref.current) return;
 
-            const {beamLength, eavesHeight, roofInclineRad, width, length, interaxleLength, pillars} = requiredValues;
+            const {beamLengthDH, eavesHeight, roofInclineRad, width, length, interaxleLength, pillars} = requiredValues;
             const mesh = new THREE.Object3D();
-            const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'D')
-                                            ? (interaxleWidth / 2) + 0.5
-                                            : (width / 2)
 
             for (let i = 0; i < (length / interaxleLength) + 1; i++) {
-                mesh.scale.x = beamLength + 1;
+                mesh.scale.x = beamLengthDH;
                 const shift = ref.current.geometry.boundingBox!.max.x;
                 ref.current.geometry.translate(-shift, 0, 0);
-                mesh.position.set(beamPosition, eavesHeight + secondHeightOffset, -interaxleLength * i);
+                mesh.position.set((width / 2), eavesHeight, -interaxleLength * i);
                 mesh.rotation.set(0, 0, -roofInclineRad);
                 ref.current.geometry.attributes.position.needsUpdate = true;
                 mesh.updateMatrix();
