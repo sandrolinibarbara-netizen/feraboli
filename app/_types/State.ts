@@ -16,6 +16,12 @@ export type Geometry = {
     purlinsLeft: THREE.BufferGeometry,
     beamsRight: THREE.BufferGeometry,
     beamsLeft: THREE.BufferGeometry,
+    capitalPortalSOpp: THREE.BufferGeometry,
+    capitalPortalS: THREE.BufferGeometry,
+    capitalPortalD: THREE.BufferGeometry,
+    capitalStrutsSOpp: THREE.BufferGeometry,
+    capitalStrutsS: THREE.BufferGeometry,
+    capitalStrutsD: THREE.BufferGeometry,
     pillars: THREE.BufferGeometry,
     bases: THREE.BufferGeometry,
 }

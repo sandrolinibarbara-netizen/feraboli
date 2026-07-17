@@ -32,12 +32,19 @@ import PurlinsRightDH from "@/app/_components/_structure/PurlinsRightDH";
 import PurlinsLeftDH from "@/app/_components/_structure/PurlinsLeftDH";
 import BeamsLeftDH from "@/app/_components/_structure/BeamsLeftDH";
 import BeamsRightDH from "@/app/_components/_structure/BeamsRightDH";
+import Struts from "@/app/_components/_structure/Struts";
+import Portal from "@/app/_components/_structure/Portal";
+import StrutsSingle from "@/app/_components/_structure/StrutsSingle";
+import PortalSingle from "@/app/_components/_structure/PortalSingle";
+import StrutsSingleOpp from "@/app/_components/_structure/StrutsSingleOpp";
+import PortalSingleOpp from "@/app/_components/_structure/PortalSingleOpp";
 extend({InstancedUniformsMesh});
 
 export default function Configurator() {
 
     const pillars = useMeasurementsStore((state: State) => state.pillars);
     const pitches = useMeasurementsStore((state: State) => state.pitches);
+    const structureType = useMeasurementsStore((state: State) => state.structureType);
     const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
     const domeType = useMeasurementsStore((state: State) => state.domeType);
@@ -50,6 +57,7 @@ export default function Configurator() {
 
     const baseModel = useGLTF('/pilastro.glb');
     const structureModels = {
+        domeCoveringSpherical: (baseModel.scene.children[14] as THREE.Mesh).geometry,
         domeCoveringRight: (baseModel.scene.children[10] as THREE.Mesh).geometry,
         domeCoveringLeft: (baseModel.scene.children[9] as THREE.Mesh).geometry,
         domePurlinsRight: (baseModel.scene.children[11] as THREE.Mesh).geometry,
@@ -65,6 +73,12 @@ export default function Configurator() {
         purlinsLeft: (baseModel.scene.children[6] as THREE.Mesh).geometry,
         beamsRight: (baseModel.scene.children[1] as THREE.Mesh).geometry,
         beamsLeft: (baseModel.scene.children[1] as THREE.Mesh).geometry,
+        capitalPortalSOpp: (baseModel.scene.children[20] as THREE.Mesh).geometry,
+        capitalPortalS: (baseModel.scene.children[18] as THREE.Mesh).geometry,
+        capitalPortalD: (baseModel.scene.children[16] as THREE.Mesh).geometry,
+        capitalStrutsSOpp: (baseModel.scene.children[19] as THREE.Mesh).geometry,
+        capitalStrutsS: (baseModel.scene.children[17] as THREE.Mesh).geometry,
+        capitalStrutsD: (baseModel.scene.children[15] as THREE.Mesh).geometry,
         pillars: (baseModel.scene.children[0] as THREE.Mesh).geometry,
         bases: (baseModel.scene.children[2] as THREE.Mesh).geometry,
     }
@@ -125,6 +139,29 @@ export default function Configurator() {
                     <PurlinsLeft material={matcapMaterial}/>
                     <BeamsLeft material={(pillars < 3 && pitches?.includes('M')) ? matcapMaterial : matcapMaterialClippedLeft}/>
                     <BeamsRight material={matcapMaterialClippedRight}/>
+
+                    {
+                        structureType === 'portal'
+                            ? <Portal material={matcapMaterial} />
+                            : structureType === 'struts'
+                                ? <Struts material={matcapMaterial} />
+                                : <></>
+                    }
+
+                    {
+                        structureType === 'portal' && secondHeight
+                            ? <>
+                                <PortalSingle material={matcapMaterial} />
+                                <PortalSingleOpp material={matcapMaterial} />
+                              </>
+                            : structureType === 'struts' && secondHeight
+                                ?
+                                    <>
+                                        <StrutsSingle material={matcapMaterial} />
+                                        <StrutsSingleOpp material={matcapMaterial} />
+                                    </>
+                                : <></>
+                    }
 
                     <Pillars material={matcapMaterial}/>
                     <Bases material={matcapMaterial}/>

@@ -5,54 +5,60 @@ import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {State} from "@/app/_types/State";
 import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 
-export default function Pillars({material} : {material : THREE.Material}) {
+export default function StrutsSingle({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
     const pillars = useMeasurementsStore((state: State) => state.pillars);
-    const structureType = useMeasurementsStore((state: State) => state.structureType);
-
     const pillarsHeight = useMeasurementsStore((state: State) => state.pillarsHeight);
     const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
     const interaxleLength = useMeasurementsStore((state: State) => state.interaxleLength);
+    const roofIncline = useMeasurementsStore((state: State) => state.roofIncline);
+    const eavesHeight = useMeasurementsStore((state: State) => state.eavesHeight);
 
     const ref = useRef<THREE.Mesh|null>(null);
-    const pillarGeometry = baseModel?.pillars;
+    const strutsSGeometry = baseModel?.capitalStrutsS;
 
     const requiredValues = getDefinedValues({
         pillars,
-        structureType,
         pillarsHeight,
         width,
         length,
-        interaxleLength
+        interaxleLength,
+        roofIncline,
+        eavesHeight
     });
 
     if (!requiredValues) return null;
+
+    const effPillars = 2;
 
     const PILLARS = () => {
         useLayoutEffect(() => {
             if (!ref.current) return;
 
-            const {pillars, pillarsHeight, width, length, interaxleLength} = requiredValues;
+            const {pillars, pillarsHeight, width, length, interaxleLength, roofIncline, eavesHeight} = requiredValues;
             const mesh = new THREE.Object3D();
 
-            const capital = (structureType === 'portal' || structureType === 'struts')
-                                        ? 1.01
-                                        : 0
+            for(let i = 0; i < (effPillars * (length / interaxleLength)) + effPillars; i++) {
+                const remainder = i % 2;
+                let index, height;
 
-            for(let i = 0; i < (pillars * (length / interaxleLength)) + pillars; i++) {
-                mesh.scale.y = pillarsHeight[i - (pillars * Math.floor(i / pillars))].totalHeight! - capital;
-                const shift =  ref.current.geometry.boundingBox!.min.y;
-                ref.current.geometry.translate(0, -shift, 0);
-                ref.current.geometry.attributes.position.needsUpdate = true;
-                mesh.position.set(pillarsHeight[i - (pillars * Math.floor(i / pillars))].position! - (width / 2), 0, - interaxleLength * Math.floor(i / pillars));
+                if(remainder === 0) {
+                    index = (pillars / 2) - 1;
+                    height = height = eavesHeight - 1.01 - 0.25 + (roofIncline.percentage! * pillarsHeight[index].position!) / 100;
+                } else {
+                    index = pillars / 2;
+                    height = pillarsHeight[index].totalHeight! - 1.03;
+                }
+
+                mesh.position.set(pillarsHeight[index].position! - (width / 2), height, - interaxleLength * Math.floor(i / effPillars));
                 mesh.updateMatrix();
                 (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
             }
         }, []);
 
         return(
-            <instancedUniformsMesh ref={ref} args={[pillarGeometry, material, (requiredValues.pillars * (requiredValues.length / requiredValues.interaxleLength)) + requiredValues.pillars]}></instancedUniformsMesh>
+            <instancedUniformsMesh ref={ref} args={[strutsSGeometry, material, (effPillars * (requiredValues.length / requiredValues.interaxleLength)) + effPillars]}></instancedUniformsMesh>
         )
     }
 

@@ -190,30 +190,31 @@ export default function MeasurementsInput() {
     }
     function editDome(n: number) {
             const domeArr = ["D", "S", "DT"];
-
-            switch(n) {
-                case 0:
-                    let newMinValue;
-                    if(measurements.dome === '') {
-                        newMinValue = domeArr[domeArr.length - 1];
-                    } else if(domeArr.indexOf(measurements.dome) === 0) {
-                        newMinValue = domeArr[domeArr.length - 1];
-                    } else {
-                        newMinValue = domeArr[domeArr.indexOf(measurements.dome) - 1]
-                    }
-                    setMeasurements({...measurements, dome: newMinValue});
-                    break;
-                case 1:
-                    let newMaxValue;
-                    if(measurements.dome === '') {
-                        newMaxValue = domeArr[0];
-                    } else if(domeArr.indexOf(measurements.dome) === domeArr.length - 1) {
-                        newMaxValue = domeArr[0];
-                    } else {
-                        newMaxValue = domeArr[domeArr.indexOf(measurements.dome) + 1]
-                    }
-                    setMeasurements({...measurements, dome: newMaxValue});
-                    break;
+            if(measurements.dome) {
+                switch(n) {
+                    case 0:
+                        let newMinValue;
+                        if(measurements.dome === '') {
+                            newMinValue = domeArr[domeArr.length - 1];
+                        } else if(domeArr.indexOf(measurements.dome) === 0) {
+                            newMinValue = domeArr[domeArr.length - 1];
+                        } else {
+                            newMinValue = domeArr[domeArr.indexOf(measurements.dome) - 1]
+                        }
+                        setMeasurements({...measurements, dome: newMinValue});
+                        break;
+                    case 1:
+                        let newMaxValue;
+                        if(measurements.dome === '') {
+                            newMaxValue = domeArr[0];
+                        } else if(domeArr.indexOf(measurements.dome) === domeArr.length - 1) {
+                            newMaxValue = domeArr[0];
+                        } else {
+                            newMaxValue = domeArr[domeArr.indexOf(measurements.dome) + 1]
+                        }
+                        setMeasurements({...measurements, dome: newMaxValue});
+                        break;
+                }
             }
     }
     // function editInsulation(n:number) {
@@ -637,7 +638,7 @@ export default function MeasurementsInput() {
                                                     </button>
                                                     <div
                                                         className="uppercase flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
-                                                        {measurements.dome === '' ? '-' : setDomeLabel(measurements.dome)}
+                                                        {measurements.dome === '' ? '-' : setDomeLabel(measurements.dome!)}
                                                     </div>
                                                     <button onClick={() => editDome(1)}
                                                             className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
