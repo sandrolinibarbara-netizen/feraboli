@@ -8,6 +8,7 @@ import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 export default function StrutsSingleOpp({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
     const pillars = useMeasurementsStore((state: State) => state.pillars);
+    const pitches = useMeasurementsStore((state: State) => state.pitches);
     const pillarsHeight = useMeasurementsStore((state: State) => state.pillarsHeight);
     const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
@@ -20,6 +21,7 @@ export default function StrutsSingleOpp({material} : {material : THREE.Material}
 
     const requiredValues = getDefinedValues({
         pillars,
+        pitches,
         pillarsHeight,
         width,
         length,
@@ -30,7 +32,7 @@ export default function StrutsSingleOpp({material} : {material : THREE.Material}
 
     if (!requiredValues) return null;
 
-    const effPillars = 2;
+    const effPillars = pitches === 'S' && pillars === 3 ? 1 : 2;
 
     const PILLARS = () => {
         useLayoutEffect(() => {
@@ -43,12 +45,17 @@ export default function StrutsSingleOpp({material} : {material : THREE.Material}
                 const remainder = i % 2;
                 let index, height;
 
-                if(remainder === 0) {
-                    index = (pillars / 2) - 1;
-                    height = pillarsHeight[index].totalHeight! - 1.03;
+                if(pitches === 'S' && pillars === 3) {
+                    index = 1;
+                    height = eavesHeight - 1.01 + (roofIncline.percentage! * pillarsHeight[index].position!) / 100;
                 } else {
-                    index = pillars / 2;
-                    height = eavesHeight - 1.01 - 0.25 + (roofIncline.percentage! * pillarsHeight[index - 1].position!) / 100;
+                    if (remainder === 0) {
+                        index = (pillars / 2) - 1;
+                        height = pillarsHeight[index].totalHeight! - 1.03;
+                    } else {
+                        index = pillars / 2;
+                        height = eavesHeight - 1.01 - 0.25 + (roofIncline.percentage! * pillarsHeight[index - 1].position!) / 100;
+                    }
                 }
 
                 mesh.position.set(pillarsHeight[index].position! - (width / 2), height, - interaxleLength * Math.floor(i / effPillars));

@@ -190,16 +190,15 @@ export default function MeasurementsInput() {
     }
     function editDome(n: number) {
             const domeArr = ["D", "S", "DT"];
-            if(measurements.dome) {
                 switch(n) {
                     case 0:
                         let newMinValue;
                         if(measurements.dome === '') {
                             newMinValue = domeArr[domeArr.length - 1];
-                        } else if(domeArr.indexOf(measurements.dome) === 0) {
+                        } else if(domeArr.indexOf(measurements.dome!) === 0) {
                             newMinValue = domeArr[domeArr.length - 1];
                         } else {
-                            newMinValue = domeArr[domeArr.indexOf(measurements.dome) - 1]
+                            newMinValue = domeArr[domeArr.indexOf(measurements.dome!) - 1]
                         }
                         setMeasurements({...measurements, dome: newMinValue});
                         break;
@@ -207,15 +206,15 @@ export default function MeasurementsInput() {
                         let newMaxValue;
                         if(measurements.dome === '') {
                             newMaxValue = domeArr[0];
-                        } else if(domeArr.indexOf(measurements.dome) === domeArr.length - 1) {
+                            console.log(domeArr[0])
+                        } else if(domeArr.indexOf(measurements.dome!) === domeArr.length - 1) {
                             newMaxValue = domeArr[0];
                         } else {
-                            newMaxValue = domeArr[domeArr.indexOf(measurements.dome) + 1]
+                            newMaxValue = domeArr[domeArr.indexOf(measurements.dome!) + 1]
                         }
                         setMeasurements({...measurements, dome: newMaxValue});
                         break;
                 }
-            }
     }
     // function editInsulation(n:number) {
     //     const insulationArr = ["5G", "L", "FC"];

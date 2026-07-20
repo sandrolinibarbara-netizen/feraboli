@@ -8,6 +8,7 @@ import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 export default function Struts({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
     const pillars = useMeasurementsStore((state: State) => state.pillars);
+    const pitches = useMeasurementsStore((state: State) => state.pitches);
     const pillarsHeight = useMeasurementsStore((state: State) => state.pillarsHeight);
     const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
@@ -19,6 +20,7 @@ export default function Struts({material} : {material : THREE.Material}) {
 
     const requiredValues = getDefinedValues({
         pillars,
+        pitches,
         pillarsHeight,
         width,
         length,
@@ -27,7 +29,11 @@ export default function Struts({material} : {material : THREE.Material}) {
 
     if (!requiredValues) return null;
 
-    const effPillars = secondHeight ? requiredValues.pillars - 2 : requiredValues.pillars;
+    const effPillars = secondHeight
+        ? requiredValues.pillars - 2
+        : pitches === 'S' && pillars === 3
+            ? requiredValues.pillars - 1
+            : requiredValues.pillars;
 
     const PILLARS = () => {
         useLayoutEffect(() => {
@@ -45,6 +51,18 @@ export default function Struts({material} : {material : THREE.Material}) {
                         index = remainder;
                     } else {
                         index = remainder + 2;
+                    }
+
+                    mesh.position.set(pillarsHeight[index].position! - (width / 2), pillarsHeight[index].totalHeight! - 1.03, - interaxleLength * Math.floor(i / effPillars));
+
+                } else if(pitches === 'S' && pillars === 3) {
+                    const remainder = i % effPillars;
+                    let index;
+
+                    if(remainder < effPillars / 2) {
+                        index = remainder;
+                    } else {
+                        index = remainder + 1;
                     }
 
                     mesh.position.set(pillarsHeight[index].position! - (width / 2), pillarsHeight[index].totalHeight! - 1.03, - interaxleLength * Math.floor(i / effPillars));

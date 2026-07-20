@@ -38,6 +38,9 @@ import StrutsSingle from "@/app/_components/_structure/StrutsSingle";
 import PortalSingle from "@/app/_components/_structure/PortalSingle";
 import StrutsSingleOpp from "@/app/_components/_structure/StrutsSingleOpp";
 import PortalSingleOpp from "@/app/_components/_structure/PortalSingleOpp";
+import TieBeam from "@/app/_components/_structure/TieBeam";
+import TieBeamVert from "@/app/_components/_structure/TieBeamVert";
+import TieBeamCentral from "@/app/_components/_structure/TieBeamCentral";
 extend({InstancedUniformsMesh});
 
 export default function Configurator() {
@@ -97,17 +100,18 @@ export default function Configurator() {
     const redMatcapMaterialClippedRight = new THREE.MeshMatcapMaterial({matcap: redMatcap, clippingPlanes: [localPlaneRight]});
 
 
-    return(
+    return (
         <>
-            <Plane args={[width ? width + 10 : 0, length ? length + 10 : 0]} rotation={[-Math.PI/2, 0,0]} position={[0, 0, length ? -length/2 : 0]}/>
+            <Plane args={[width ? width + 10 : 0, length ? length + 10 : 0]} rotation={[-Math.PI / 2, 0, 0]}
+                   position={[0, 0, length ? -length / 2 : 0]}/>
             {pillars &&
                 <>
-                    { domeType === 'S'
+                    {domeType === 'S'
                         ? <>
                             <DomeCoveringMono material={matcapMaterial}/>
                             <DomePurlinsMono material={matcapMaterial}/>
                             <DomeBeamMono material={matcapMaterial}/>
-                          </>
+                        </>
                         : <>
                             <DomeCoveringLeft material={redMatcapMaterialClippedLeft}/>
                             <DomeCoveringRight material={redMatcapMaterialClippedRight}/>
@@ -116,7 +120,7 @@ export default function Configurator() {
                             <DomePurlinsRight material={matcapMaterial}/>
                             <DomeBeamsLeft material={matcapMaterialClippedLeft}/>
                             <DomeBeamsRight material={matcapMaterialClippedRight}/>
-                          </>
+                        </>
                     }
                     <DomePillarsRight material={matcapMaterial}/>
                     <DomePillarsLeft material={matcapMaterial}/>
@@ -133,32 +137,45 @@ export default function Configurator() {
                         </>
                     }
 
-                    <CoveringRight material={pillars === 1 && pitches === 'D' ? redMatcapMaterialClippedRight : redMatcapMaterial}/>
-                    <CoveringLeft material={pitches?.includes('S') || (pillars === 1 && pitches === 'D') ? redMatcapMaterialClippedLeft : redMatcapMaterial}/>
+                    <CoveringRight
+                        material={pillars === 1 && pitches === 'D' ? redMatcapMaterialClippedRight : redMatcapMaterial}/>
+                    <CoveringLeft
+                        material={pitches?.includes('S') || (pillars === 1 && pitches === 'D') ? redMatcapMaterialClippedLeft : redMatcapMaterial}/>
                     <PurlinsRight material={matcapMaterial}/>
                     <PurlinsLeft material={matcapMaterial}/>
-                    <BeamsLeft material={(pillars < 3 && pitches?.includes('M')) ? matcapMaterial : matcapMaterialClippedLeft}/>
+                    <BeamsLeft
+                        material={(pillars < 3 && pitches?.includes('M')) ? matcapMaterial : matcapMaterialClippedLeft}/>
                     <BeamsRight material={matcapMaterialClippedRight}/>
 
                     {
                         structureType === 'portal'
-                            ? <Portal material={matcapMaterial} />
+                            ? <Portal material={matcapMaterial}/>
                             : structureType === 'struts'
-                                ? <Struts material={matcapMaterial} />
-                                : <></>
+                                ? <Struts material={matcapMaterial}/>
+                                : structureType === 'tieBeam'
+                                    ? <>
+                                        <TieBeamVert material={matcapMaterial}/>
+                                        <TieBeam material={matcapMaterial}/>
+                                    </>
+                                    : <></>
                     }
 
                     {
-                        structureType === 'portal' && secondHeight
+                        structureType === 'portal' && (secondHeight || (pitches === 'S' && pillars === 3))
                             ? <>
-                                <PortalSingle material={matcapMaterial} />
-                                <PortalSingleOpp material={matcapMaterial} />
-                              </>
-                            : structureType === 'struts' && secondHeight
+                                <PortalSingle material={matcapMaterial}/>
+                                <PortalSingleOpp material={matcapMaterial}/>
+                            </>
+                            : structureType === 'struts' && (secondHeight || (pitches === 'S' && pillars === 3))
                                 ?
+                                <>
+                                    <StrutsSingle material={matcapMaterial}/>
+                                    <StrutsSingleOpp material={matcapMaterial}/>
+                                </>
+                                : structureType === 'tieBeam' && secondHeight
+                                    ?
                                     <>
-                                        <StrutsSingle material={matcapMaterial} />
-                                        <StrutsSingleOpp material={matcapMaterial} />
+                                        <TieBeamCentral material={matcapMaterial}/>
                                     </>
                                 : <></>
                     }
@@ -168,5 +185,6 @@ export default function Configurator() {
                 </>
             }
         </>
-    )
+    );
+
 }
