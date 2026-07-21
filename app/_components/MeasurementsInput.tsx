@@ -189,7 +189,7 @@ export default function MeasurementsInput() {
         }
     }
     function editDome(n: number) {
-            const domeArr = ["D", "S", "DT"];
+            const domeArr = ["D", "S", "DT", "SP"];
                 switch(n) {
                     case 0:
                         let newMinValue;
@@ -331,6 +331,9 @@ export default function MeasurementsInput() {
                 break;
             case "DT":
                 label = "Traslucido a 2 falde";
+                break;
+            case "SP":
+                label = "Sferico";
                 break;
         }
 

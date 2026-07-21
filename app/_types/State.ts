@@ -1,6 +1,7 @@
 import * as THREE from "three";
 
 export type Geometry = {
+    domeCoveringSpherical: THREE.BufferGeometry,
     domeCoveringRight: THREE.BufferGeometry,
     domeCoveringLeft: THREE.BufferGeometry,
     domePurlinsRight: THREE.BufferGeometry,

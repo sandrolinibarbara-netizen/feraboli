@@ -44,6 +44,11 @@ import TieBeamCentral from "@/app/_components/_structure/TieBeamCentral";
 import Reticular from "@/app/_components/_structure/Reticular";
 import ReticularSingle from "@/app/_components/_structure/ReticularSingle";
 import ReticularSingleOpp from "@/app/_components/_structure/ReticularSingleOpp";
+import DomeCoveringSpherical from "@/app/_components/_structure/DomeCoveringSpherical";
+import DomePurlinsLeftSP from "@/app/_components/_structure/DomePurlinsLeftSP";
+import DomePurlinsRightSP from "@/app/_components/_structure/DomePurlinsRightSP";
+import DomePillarsRightSP from "@/app/_components/_structure/DomePillarsRightSP";
+import DomePillarsLeftSP from "@/app/_components/_structure/DomePillarsLeftSP";
 extend({InstancedUniformsMesh});
 
 export default function Configurator() {
@@ -115,18 +120,33 @@ export default function Configurator() {
                             <DomePurlinsMono material={matcapMaterial}/>
                             <DomeBeamMono material={matcapMaterial}/>
                         </>
-                        : <>
-                            <DomeCoveringLeft material={redMatcapMaterialClippedLeft}/>
-                            <DomeCoveringRight material={redMatcapMaterialClippedRight}/>
-                            <DomePurlinsCentral material={matcapMaterial}/>
-                            <DomePurlinsLeft material={matcapMaterial}/>
-                            <DomePurlinsRight material={matcapMaterial}/>
-                            <DomeBeamsLeft material={matcapMaterialClippedLeft}/>
-                            <DomeBeamsRight material={matcapMaterialClippedRight}/>
-                        </>
+                        : domeType !== 'SP'
+                            ?   <>
+                                    <DomeCoveringLeft material={redMatcapMaterialClippedLeft}/>
+                                    <DomeCoveringRight material={redMatcapMaterialClippedRight}/>
+                                    <DomePurlinsCentral material={matcapMaterial}/>
+                                    <DomePurlinsLeft material={matcapMaterial}/>
+                                    <DomePurlinsRight material={matcapMaterial}/>
+                                    <DomeBeamsLeft material={matcapMaterialClippedLeft}/>
+                                    <DomeBeamsRight material={matcapMaterialClippedRight}/>
+                                </>
+                            : <></>
                     }
-                    <DomePillarsRight material={matcapMaterial}/>
-                    <DomePillarsLeft material={matcapMaterial}/>
+
+                    {
+                        domeType === 'SP'
+                            ? <>
+                                <DomeCoveringSpherical material={redMatcapMaterial}/>
+                                <DomePurlinsLeftSP material={matcapMaterial}/>
+                                <DomePurlinsRightSP material={matcapMaterial}/>
+                                <DomePillarsRightSP material={matcapMaterial}/>
+                                <DomePillarsLeftSP material={matcapMaterial}/>
+                              </>
+                            : <>
+                                <DomePillarsRight material={matcapMaterial}/>
+                                <DomePillarsLeft material={matcapMaterial}/>
+                              </>
+                    }
 
                     {
                         pitches === 'DH' && secondHeight &&
