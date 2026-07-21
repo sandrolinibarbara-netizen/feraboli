@@ -87,7 +87,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
                 }
 
                 state.eavesHeight = Number(measurements.eavesHeight);
-                if(measurements.secondHeight !== '' && measurements.pitches === 'D') {
+                if(measurements.secondHeight !== '' && measurements.pitches === 'DH') {
                     state.secondHeight = Number(measurements.secondHeight);
                 } else {
                     state.secondHeight = undefined;
@@ -109,7 +109,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
             state.pillarsHeight = [];
             const halfWidth = state.width / 2;
 
-            state.secondHeightOffset = state.secondHeight && state.pillars > 3 && state.pitches === 'D'
+            state.secondHeightOffset = state.secondHeight && state.pillars > 3 && state.pitches === 'DH'
                 ? (halfWidth - ((state.interaxleWidth / 2) + 0.5)) * Math.tan(state.roofIncline.rad!) + state.secondHeight
                 : 0;
 
@@ -252,5 +252,5 @@ export const useMeasurementsStore = create<State>((set, get) => ({
     domeHeight: undefined,
     domeWidth: undefined,
     secondHeightOffset: 0,
-    pillarsHeight: []
+    pillarsHeight: undefined
 }))

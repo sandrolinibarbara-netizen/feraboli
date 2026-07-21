@@ -40,7 +40,7 @@ export default function CoveringRight({material} : {material : THREE.Material}) 
 
             const {coveringLength, eavesHeight, roofInclineRad, width, length, pillars} = requiredValues;
             const mesh = new THREE.Object3D();
-            const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'D')
+            const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'DH')
                 ? (interaxleWidth / 2) + 0.5
                 : (width / 2)
 

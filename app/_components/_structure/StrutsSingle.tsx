@@ -51,7 +51,7 @@ export default function StrutsSingle({material} : {material : THREE.Material}) {
                 } else {
                     if(remainder === 0) {
                         index = (pillars / 2) - 1;
-                        height = height = eavesHeight - 1.01 - 0.25 + (roofIncline.percentage! * pillarsHeight[index].position!) / 100;
+                        height = eavesHeight - 1.01 - 0.25 + (roofIncline.percentage! * pillarsHeight[index].position!) / 100;
                     } else {
                         index = pillars / 2;
                         height = pillarsHeight[index].totalHeight! - 1.03;

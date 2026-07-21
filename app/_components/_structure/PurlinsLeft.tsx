@@ -46,7 +46,7 @@ export default function PurlinsLeft({material} : {material : THREE.Material}) {
             const roofRad = secondRoofIncline.rad ?? roofInclineRad;
             const mesh = new THREE.Object3D();
 
-            const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'D')
+            const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'DH')
                 ? -(interaxleWidth / 2) - 0.5
                 : -(width / 2)
 

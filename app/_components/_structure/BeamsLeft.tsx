@@ -71,7 +71,7 @@ export default function BeamsLeft({material} : {material : THREE.Material}) {
                 const {beamLength, eavesHeight, roofInclineRad, width, length, interaxleLength, pillars} = primaryRoofValues;
                 const mesh = new THREE.Object3D();
 
-                const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'D')
+                const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'DH')
                     ? -(interaxleWidth / 2) - 0.5
                     : -(width / 2)
 

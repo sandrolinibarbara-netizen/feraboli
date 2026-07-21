@@ -7,6 +7,7 @@ import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 
 export default function TieBeam({material} : {material : THREE.Material}) {
     const pillars = useMeasurementsStore((state: State) => state.pillars);
+    const pitches = useMeasurementsStore((state: State) => state.pitches);
     const pillarsHeight = useMeasurementsStore((state: State) => state.pillarsHeight);
     const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
@@ -22,13 +23,14 @@ export default function TieBeam({material} : {material : THREE.Material}) {
         width,
         length,
         interaxleLength,
-        pillars
+        pillars,
+        pitches
     });
 
     if (!requiredValues) return null;
 
     const TIEBEAM = () => {
-        const {length, interaxleLength, width, interaxleWidth} = requiredValues;
+        const {length, interaxleLength, width, interaxleWidth, pitches} = requiredValues;
         const hasSecondHeight = secondHeight !== undefined;
         const frames = (length / interaxleLength) + 1;
         const effWidth = hasSecondHeight ? width / 2 : width;
@@ -53,7 +55,12 @@ export default function TieBeam({material} : {material : THREE.Material}) {
                         -interaxleLength * Math.floor(i / 2)
                     );
                 } else {
-                    mesh.position.set(0, pillarsHeight[0].totalHeight!, -interaxleLength * i);
+                    if(pitches === 'S' && pillars === 3) {
+                        mesh.position.set(0, pillarsHeight[pillars - 1].totalHeight!, -interaxleLength * i);
+
+                    } else {
+                        mesh.position.set(0, pillarsHeight[0].totalHeight!, -interaxleLength * i);
+                    }
                 }
 
                 mesh.rotation.set(0, 0, Math.PI/2);

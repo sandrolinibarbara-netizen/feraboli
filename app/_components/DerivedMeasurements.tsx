@@ -1,10 +1,7 @@
 import React, {Fragment, useState} from "react";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {State} from "@/app/_types/State";
-import {Drawer} from "@mui/material";
 import Image from "next/image";
-
-type Anchor = 'top' | 'left' | 'bottom' | 'right';
 
 export default function DerivedMeasurements() {
 
@@ -71,7 +68,7 @@ export default function DerivedMeasurements() {
                     </>
                 }
                 {
-                    pillars && (pillars > 1 || pitches === 'D') &&
+                    pillars && (pillars > 1 || pitches?.includes('D')) &&
                     <>
                         <p className="flex justify-between p-1 border-b-strokes border-b-1">Altezza
                             cupolino: <span className="text-black">{domeHeight?.toFixed(2)} m</span></p>
@@ -93,7 +90,7 @@ export default function DerivedMeasurements() {
 
                 <p className="flex justify-between p-1 mt-4">Pilastri:</p>
                 <ul className="pl-4">
-                    {pillarsHeight.map((el, i) => {
+                    {pillarsHeight?.map((el, i) => {
                         return (
                             <li key={i}>
                                 {i + 1}:

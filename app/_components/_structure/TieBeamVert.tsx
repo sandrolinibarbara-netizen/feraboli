@@ -71,7 +71,7 @@ export default function TieBeamVert({material} : {material : THREE.Material}) {
     const TIEBEAMVERT = () => {
         const {pillars, length, interaxleLength, interaxleWidth} = requiredValues;
 
-        const tieBeamVertGeometry = new THREE.CylinderGeometry(0.01, 0.01,2, 6);
+        const tieBeamVertGeometry = new THREE.CylinderGeometry(0.01, 0.01,6, 6);
         const beamsPerPillars = 2 * (pillars - 1);
         const frames = (length / interaxleLength) + 1;
         const effBeams = frames * beamsPerPillars;
@@ -100,7 +100,7 @@ export default function TieBeamVert({material} : {material : THREE.Material}) {
                 let outerLeftIndex = 0;
                 let outerRightIndex = 0;
 
-                const hasDoubleHeight = pillars > 3 && pitches === 'D';
+                const hasDoubleHeight = hasSecondHeight && pillars > 3;
                 const leftBeamPosition = hasDoubleHeight
                     ? -(interaxleWidth / 2) - 0.5
                     : -(width / 2);
@@ -119,11 +119,13 @@ export default function TieBeamVert({material} : {material : THREE.Material}) {
                         : (interaxleWidth / 3) * 2;
                     const tieBeamPillarIndex = hasSecondHeight && isCentral
                         ? Math.floor(pillars / 2) - 1
-                        : 0;
+                        : pitches === 'S' && pillars === 3
+                             ? pillars - 1
+                             : 0;
 
                     mesh.position.set(
                         pillarsHeight[pillarIndex].position! + xOffset - (width / 2),
-                        pillarsHeight[tieBeamPillarIndex].totalHeight! + 1,
+                        pillarsHeight[tieBeamPillarIndex].totalHeight! + 3,
                         -interaxleLength * Math.floor(i / beamsPerPillars)
                     );
                     mesh.updateMatrix();

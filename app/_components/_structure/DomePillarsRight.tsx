@@ -78,7 +78,7 @@ export default function DomePillarsRight({material} : {material : THREE.Material
             } = requiredValues;
             const mesh = new THREE.Object3D();
 
-            const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'D')
+            const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'DH')
                 ? (interaxleWidth / 2) + 0.5
                 : (width / 2)
 

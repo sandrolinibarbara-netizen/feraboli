@@ -41,6 +41,9 @@ import PortalSingleOpp from "@/app/_components/_structure/PortalSingleOpp";
 import TieBeam from "@/app/_components/_structure/TieBeam";
 import TieBeamVert from "@/app/_components/_structure/TieBeamVert";
 import TieBeamCentral from "@/app/_components/_structure/TieBeamCentral";
+import Reticular from "@/app/_components/_structure/Reticular";
+import ReticularSingle from "@/app/_components/_structure/ReticularSingle";
+import ReticularSingleOpp from "@/app/_components/_structure/ReticularSingleOpp";
 extend({InstancedUniformsMesh});
 
 export default function Configurator() {
@@ -126,7 +129,7 @@ export default function Configurator() {
                     <DomePillarsLeft material={matcapMaterial}/>
 
                     {
-                        pitches === 'D' && secondHeight &&
+                        pitches === 'DH' && secondHeight &&
                         <>
                             <CoveringRightDH material={redMatcapMaterial}/>
                             <CoveringLeftDH material={redMatcapMaterial}/>
@@ -157,6 +160,10 @@ export default function Configurator() {
                                         <TieBeamVert material={matcapMaterial}/>
                                         <TieBeam material={matcapMaterial}/>
                                     </>
+                                    : structureType === 'reticular' && !(pitches === 'S' && pillars === 3)
+                                        ? <>
+                                            <Reticular/>
+                                        </>
                                     : <></>
                     }
 
@@ -172,12 +179,18 @@ export default function Configurator() {
                                     <StrutsSingle material={matcapMaterial}/>
                                     <StrutsSingleOpp material={matcapMaterial}/>
                                 </>
-                                : structureType === 'tieBeam' && secondHeight
+                                : structureType === 'reticular' && (secondHeight || (pitches === 'S' && pillars === 3))
                                     ?
                                     <>
-                                        <TieBeamCentral material={matcapMaterial}/>
+                                        <ReticularSingle/>
+                                        <ReticularSingleOpp />
                                     </>
-                                : <></>
+                                    : structureType === 'tieBeam' && secondHeight
+                                        ?
+                                        <>
+                                            <TieBeamCentral material={matcapMaterial}/>
+                                        </>
+                                    : <></>
                     }
 
                     <Pillars material={matcapMaterial}/>

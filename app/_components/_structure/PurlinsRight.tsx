@@ -42,7 +42,7 @@ export default function PurlinsRight({material} : {material : THREE.Material}) {
             const {halfPurlins, eavesHeight, coveringLength, roofInclineRad, width, length, pillars} = requiredValues;
             const mesh = new THREE.Object3D();
 
-            const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'D')
+            const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'DH')
                 ? (interaxleWidth / 2) + 0.5
                 : (width / 2)
 

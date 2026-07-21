@@ -89,5 +89,5 @@ export interface State {
     domeHeight: number | undefined,
     domeWidth: number | undefined,
     secondHeightOffset: number,
-    pillarsHeight: Pillar[],
+    pillarsHeight: Pillar[] | undefined,
 }

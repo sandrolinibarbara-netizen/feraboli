@@ -79,7 +79,7 @@ export default function MeasurementsInput() {
         const pitchesTwo = ["M", "D"];
         // const pitchesTwo = ["M", "M1B", "M2B", "D"];
         const pitchesThree = ["D", "S"];
-        const pitchesFour = ["M", "D"]
+        const pitchesFour = ["M", "DH"]
 
         switch(pillars) {
             case 1:
@@ -285,6 +285,7 @@ export default function MeasurementsInput() {
                 }
                 break;
             case "D":
+            case "DH":
                 label = "Doppia";
                 break;
             case "S":
@@ -502,7 +503,7 @@ export default function MeasurementsInput() {
                                             </div>
                                         }
 
-                                        {Number(measurements.pillars) > 3 && measurements.pitches === 'D' &&
+                                        {Number(measurements.pillars) > 3 && measurements.pitches === 'DH' &&
 
                                             <label className="flex flex-col uppercase text-xsm font-semibold">Seconda altezza
                                                 <div className="relative font-jet text-xs lowercase after:content-['m'] after:absolute after:top-[14px] after:left-[90%]"></div>
