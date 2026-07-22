@@ -12,6 +12,7 @@ import {
 export default function DomePillarsLeftSP({material}: {material: THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
     const coveringLength = useMeasurementsStore((state: State) => state.coveringLength);
+    const beamMaxHeight = useMeasurementsStore((state: State) => state.beamMaxHeight);
     const eavesHeight = useMeasurementsStore((state: State) => state.eavesHeight);
     const roofIncline = useMeasurementsStore((state: State) => state.roofIncline);
     const width = useMeasurementsStore((state: State) => state.width);
@@ -31,6 +32,7 @@ export default function DomePillarsLeftSP({material}: {material: THREE.Material}
     );
     const requiredValues = getDefinedValues({
         beamLength,
+        beamMaxHeight,
         coveringLength,
         domeHeight,
         eavesHeight,

@@ -32,7 +32,9 @@ export default function MeasurementsInput() {
         width: '',
         interaxleLength: '',
         dome: '',
-        purlin: ''
+        purlin: '',
+        spansRight: '',
+        spansLeft: ''
     });
 
     function editPillars(n:number) {
@@ -41,6 +43,10 @@ export default function MeasurementsInput() {
                 let newMinValue;
                 switch(measurements.pillars) {
                     case '1':
+                    case '':
+                        newMinValue = '10';
+                        break;
+                    case '10':
                         newMinValue = '8';
                         break;
                     case '6':
@@ -58,6 +64,9 @@ export default function MeasurementsInput() {
                 let newMaxValue;
                 switch(measurements.pillars) {
                     case '8':
+                        newMaxValue = '10';
+                        break;
+                    case '10':
                         newMaxValue = '1';
                         break;
                     case '4':
@@ -70,6 +79,56 @@ export default function MeasurementsInput() {
                         newMaxValue = (Number(measurements.pillars) + 1).toString();
                 }
                 setMeasurements({...measurements, pillars: newMaxValue, pitches: ''});
+                break;
+        }
+    }
+    function editSpans(n:number, side:string) {
+        switch(n) {
+            case 0:
+                let newMinValue;
+                if(side === 'right') {
+                    switch(measurements.spansRight) {
+                        case '1':
+                        case '':
+                            newMinValue = '10';
+                            break;
+                        default:
+                            newMinValue = (Number(measurements.spansRight) - 1).toString();
+                    }
+                    setMeasurements({...measurements, spansRight: newMinValue});
+                } else {
+                    switch(measurements.spansLeft) {
+                        case '1':
+                        case '':
+                            newMinValue = '10';
+                            break;
+                        default:
+                            newMinValue = (Number(measurements.spansLeft) - 1).toString();
+                    }
+                    setMeasurements({...measurements, spansLeft: newMinValue});
+                }
+                break;
+            case 1:
+                let newMaxValue;
+                if(side === 'right') {
+                    switch(measurements.spansRight) {
+                        case '10':
+                            newMaxValue = '1';
+                            break;
+                        default:
+                            newMaxValue = (Number(measurements.spansRight) + 1).toString();
+                    }
+                    setMeasurements({...measurements, spansRight: newMaxValue});
+                } else {
+                    switch(measurements.spansLeft) {
+                        case '10':
+                            newMaxValue = '1';
+                            break;
+                        default:
+                            newMaxValue = (Number(measurements.spansLeft) + 1).toString();
+                    }
+                    setMeasurements({...measurements, spansLeft: newMaxValue});
+                }
                 break;
         }
     }
@@ -473,7 +532,12 @@ export default function MeasurementsInput() {
                                                 </button>
                                                 <div
                                                     className="flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
-                                                    {measurements.pillars === '' ? '-' : measurements.pillars}
+                                                    {measurements.pillars === ''
+                                                        ? '-'
+                                                        : measurements.pillars === '10'
+                                                            ? 'Variabili'
+                                                            : measurements.pillars
+                                                    }
                                                 </div>
                                                 <button onClick={() => editPillars(1)}
                                                         className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
@@ -483,7 +547,62 @@ export default function MeasurementsInput() {
                                             </div>
                                         </div>
 
-                                        {measurements.pillars !== '' &&
+                                        {measurements.pillars === '10' &&
+                                            <>
+                                                <div className="flex flex-col gap-2">
+                                                    <p className="uppercase text-xsm font-semibold">Campate a destra</p>
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => editSpans(0, 'right')}
+                                                                className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
+                                                            <Image src="/minus.svg" alt="icona elemento precedente"
+                                                                   width={12}
+                                                                   height={12} aria-hidden/>
+                                                        </button>
+                                                        <div
+                                                            className="flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
+
+                                                            {measurements.spansRight === ''
+                                                                ? '-'
+                                                                : measurements.spansRight
+                                                            }
+                                                        </div>
+                                                        <button onClick={() => editSpans(1, 'right')}
+                                                                className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
+                                                            <Image src="/plus.svg" alt="icona elemento precedente"
+                                                                   width={12}
+                                                                   height={12} aria-hidden/>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-col gap-2">
+                                                    <p className="uppercase text-xsm font-semibold">Campate a sinistra</p>
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => editSpans(0, 'left')}
+                                                                className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
+                                                            <Image src="/minus.svg" alt="icona elemento precedente"
+                                                                   width={12}
+                                                                   height={12} aria-hidden/>
+                                                        </button>
+                                                        <div
+                                                            className="flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
+                                                            {measurements.spansLeft === ''
+                                                                ? '-'
+                                                                : measurements.spansLeft
+                                                            }
+                                                        </div>
+                                                        <button onClick={() => editSpans(1, 'left')}
+                                                                className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
+                                                            <Image src="/plus.svg" alt="icona elemento precedente"
+                                                                   width={12}
+                                                                   height={12} aria-hidden/>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        }
+
+                                        {measurements.pillars !== '' && measurements.pillars !== '10' &&
                                             <div className="flex flex-col gap-2">
                                                 <p className="uppercase text-xsm font-semibold">Numero
                                                     {Number(measurements.pillars) > 3 ? ' altezze' : ' falde'}</p>
@@ -520,7 +639,7 @@ export default function MeasurementsInput() {
                                         }
 
 
-                                        {Number(measurements.pillars) > 2 &&
+                                        {Number(measurements.pillars) > 2 && measurements.pillars !== '10' &&
                                             <div className="flex flex-col gap-2">
                                                 <p className="uppercase text-xsm font-semibold">Struttura</p>
                                                 <div className="flex gap-2">
@@ -543,7 +662,7 @@ export default function MeasurementsInput() {
 
                                         }
 
-                                        {measurements.pitches !== 'S' &&
+                                        {measurements.pitches !== 'S' && measurements.pillars !== '10' &&
                                             <label className="flex flex-col uppercase text-xsm font-semibold">Pendenza
                                                 tetto
                                                 <div

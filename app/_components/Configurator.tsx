@@ -1,7 +1,7 @@
 'use client'
 import React, {useEffect} from 'react'
 import * as THREE from "three";
-import {Plane, useGLTF, useTexture} from "@react-three/drei";
+import {CycleRaycast, Plane, useGLTF, useTexture} from "@react-three/drei";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {Geometry, State} from "@/app/_types/State";
 import {InstancedUniformsMesh} from 'three-instanced-uniforms-mesh';
@@ -49,6 +49,7 @@ import DomePurlinsLeftSP from "@/app/_components/_structure/DomePurlinsLeftSP";
 import DomePurlinsRightSP from "@/app/_components/_structure/DomePurlinsRightSP";
 import DomePillarsRightSP from "@/app/_components/_structure/DomePillarsRightSP";
 import DomePillarsLeftSP from "@/app/_components/_structure/DomePillarsLeftSP";
+import PillarsS from "@/app/_components/_structure/_sails/PillarsS";
 extend({InstancedUniformsMesh});
 
 export default function Configurator() {
@@ -89,7 +90,7 @@ export default function Configurator() {
         capitalPortalD: (baseModel.scene.children[16] as THREE.Mesh).geometry,
         capitalStrutsSOpp: (baseModel.scene.children[19] as THREE.Mesh).geometry,
         capitalStrutsS: (baseModel.scene.children[17] as THREE.Mesh).geometry,
-        capitalStrutsD: (baseModel.scene.children[15] as THREE.Mesh).geometry,
+        capitalStrutsD: (baseModel.scene.children[21] as THREE.Mesh).geometry,
         pillars: (baseModel.scene.children[0] as THREE.Mesh).geometry,
         bases: (baseModel.scene.children[2] as THREE.Mesh).geometry,
     }
@@ -112,7 +113,11 @@ export default function Configurator() {
         <>
             <Plane args={[width ? width + 10 : 0, length ? length + 10 : 0]} rotation={[-Math.PI / 2, 0, 0]}
                    position={[0, 0, length ? -length / 2 : 0]}/>
-            {pillars &&
+            <CycleRaycast
+                onChanged = {(objects, cycle) => console.log(objects, cycle)} // Optional onChanged event
+            />
+
+                {pillars && pillars !== 10 &&
                 <>
                     {domeType === 'S'
                         ? <>
@@ -215,6 +220,11 @@ export default function Configurator() {
 
                     <Pillars material={matcapMaterial}/>
                     <Bases material={matcapMaterial}/>
+                </>
+            }
+            {pillars && pillars === 10 &&
+                <>
+                    <PillarsS material={matcapMaterial} />
                 </>
             }
         </>

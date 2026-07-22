@@ -37,7 +37,9 @@ export interface Measurements {
     width: string | number | undefined,
     interaxleLength: string | number | undefined,
     dome: string | undefined,
-    purlin: string | undefined
+    purlin: string | undefined,
+    spansRight: string | undefined,
+    spansLeft: string | undefined
 }
 export interface Pillar {
     heightToAdd: number | undefined,
@@ -48,6 +50,7 @@ export interface State {
     geometry: Geometry | undefined,
     setGeometry: (geometry:Geometry) => void,
     pillars: number | undefined,
+    sails: number | undefined,
     pitches: string | undefined,
     structureType: string | undefined,
     eavesHeight: number | undefined,
@@ -74,6 +77,8 @@ export interface State {
     setBaseMeasurements: (measurements:Measurements) => void,
     setDerivedMeasurements: (state:State) => void,
 
+    spansRight: number | undefined,
+    spansLeft: number | undefined,
     beamMaxHeight: number | undefined,
     beamLength: number | undefined,
     beamMaxHeightDH: number | undefined,

@@ -4,6 +4,7 @@ export type DomeSphericalSide = "left" | "right";
 
 export type DomeSphericalMeasurements = {
     beamLength: number;
+    beamMaxHeight: number;
     coveringLength: number;
     domeHeight: number;
     eavesHeight: number;
@@ -141,8 +142,8 @@ export function getDomeSphericalPillarTransform(
 ): DomeSphericalTransform {
     const direction = side === "left" ? 1 : -1;
     const supportDistance = (measurements.beamLength - measurements.coveringLength) / 2;
-    const roofHeightAtSupport = (
-        measurements.roofInclinePercentage * (measurements.width / 2 - supportDistance)
+    const roofHeightAtSupport = measurements.beamMaxHeight - (
+        measurements.roofInclinePercentage * supportDistance
     ) / 100;
 
     return {
