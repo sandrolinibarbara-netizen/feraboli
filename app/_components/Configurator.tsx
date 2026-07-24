@@ -1,9 +1,9 @@
 'use client'
 import React, {useEffect} from 'react'
 import * as THREE from "three";
-import {CycleRaycast, Plane, useGLTF, useTexture} from "@react-three/drei";
+import {Plane, useGLTF, useTexture} from "@react-three/drei";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
-import {Geometry, State} from "@/app/_types/State";
+import {State} from "@/app/_types/State";
 import {InstancedUniformsMesh} from 'three-instanced-uniforms-mesh';
 import {extend} from '@react-three/fiber';
 import Bases from "@/app/_components/_structure/Bases";
@@ -49,7 +49,10 @@ import DomePurlinsLeftSP from "@/app/_components/_structure/DomePurlinsLeftSP";
 import DomePurlinsRightSP from "@/app/_components/_structure/DomePurlinsRightSP";
 import DomePillarsRightSP from "@/app/_components/_structure/DomePillarsRightSP";
 import DomePillarsLeftSP from "@/app/_components/_structure/DomePillarsLeftSP";
+import BasesS from "@/app/_components/_structure/_sails/BasesS";
 import PillarsS from "@/app/_components/_structure/_sails/PillarsS";
+import BeamsS from "@/app/_components/_structure/_sails/BeamsS";
+import CoveringS from "@/app/_components/_structure/_sails/CoveringS";
 extend({InstancedUniformsMesh});
 
 export default function Configurator() {
@@ -108,14 +111,10 @@ export default function Configurator() {
     const redMatcapMaterialClippedLeft = new THREE.MeshMatcapMaterial({matcap: redMatcap, clippingPlanes: [localPlaneLeft]});
     const redMatcapMaterialClippedRight = new THREE.MeshMatcapMaterial({matcap: redMatcap, clippingPlanes: [localPlaneRight]});
 
-
     return (
         <>
             <Plane args={[width ? width + 10 : 0, length ? length + 10 : 0]} rotation={[-Math.PI / 2, 0, 0]}
                    position={[0, 0, length ? -length / 2 : 0]}/>
-            <CycleRaycast
-                onChanged = {(objects, cycle) => console.log(objects, cycle)} // Optional onChanged event
-            />
 
                 {pillars && pillars !== 10 &&
                 <>
@@ -224,7 +223,10 @@ export default function Configurator() {
             }
             {pillars && pillars === 10 &&
                 <>
+                    <CoveringS material={redMatcapMaterial}/>
+                    <BeamsS material={matcapMaterial} />
                     <PillarsS material={matcapMaterial} />
+                    <BasesS material={matcapMaterial} />
                 </>
             }
         </>

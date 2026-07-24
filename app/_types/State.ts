@@ -46,6 +46,15 @@ export interface Pillar {
     totalHeight: number | undefined,
     position: number | undefined
 }
+export interface InstanceInformation {
+    index: number,
+    position: number[]
+}
+export interface SpanInformation {
+    beamLength: number,
+    beamMaxHeight: number,
+    halfPurlins: number
+}
 export interface State {
     geometry: Geometry | undefined,
     setGeometry: (geometry:Geometry) => void,
@@ -79,6 +88,14 @@ export interface State {
 
     spansRight: number | undefined,
     spansLeft: number | undefined,
+    spansInfo: {
+        beams: {
+            firstSpans: SpanInformation,
+            middleSpans: SpanInformation,
+            nearCentralSpans: SpanInformation,
+            centralSpan: SpanInformation
+        } | undefined
+    },
     beamMaxHeight: number | undefined,
     beamLength: number | undefined,
     beamMaxHeightDH: number | undefined,
@@ -96,4 +113,9 @@ export interface State {
     domeWidth: number | undefined,
     secondHeightOffset: number,
     pillarsHeight: Pillar[] | undefined,
+    instancesInformation: {
+        pillars: InstanceInformation[] | undefined
+    },
+    instanceShown: number | undefined,
+    setInstanceShown: (n: number | undefined) => void,
 }

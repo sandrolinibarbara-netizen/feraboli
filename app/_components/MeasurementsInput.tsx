@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {Measurements, State} from "@/app/_types/State";
 import {Accordion, AccordionDetails, AccordionSummary, FormControl, MenuItem, Select} from "@mui/material";
@@ -6,13 +6,17 @@ import {ExpandMore} from '@mui/icons-material';
 import Image from "next/image";
 
 export default function MeasurementsInput() {
-
+    const pillars = useMeasurementsStore((state: State) => state.pillars);
     const setBaseMeasurements = useMeasurementsStore((state: State) => state.setBaseMeasurements);
+    const spansLeft = useMeasurementsStore((state: State) => state.spansLeft);
+    const spansRight = useMeasurementsStore((state: State) => state.spansRight);
+
 
     const [customTab, setCustomTab] = useState(0);
     const [geometryTab, setGeometryTab] = useState(0);
     const [insulation, setInsulation] = useState('');
     const [subInsulation, setSubInsulation] = useState('');
+    const updateModelAfterSpanEdit = useRef(false);
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setCustomTab(newValue);
@@ -83,6 +87,10 @@ export default function MeasurementsInput() {
         }
     }
     function editSpans(n:number, side:string) {
+        if((n === 0 && side === 'right' && measurements.spansRight === '2' && measurements.spansLeft === '1')
+        || (n === 0 && side === 'left' && measurements.spansLeft === '2' && measurements.spansRight === '1')) {
+            return;
+        }
         switch(n) {
             case 0:
                 let newMinValue;
@@ -457,21 +465,29 @@ export default function MeasurementsInput() {
         }
     }
 
-    function calc(e: React.SubmitEvent<HTMLFormElement>) {
-        e.preventDefault();
+    const calc = useCallback((e?: React.SubmitEvent<HTMLFormElement>) => {
+        e?.preventDefault();
         setBaseMeasurements(measurements);
-    }
+    }, [measurements, setBaseMeasurements]);
+
+    useEffect(() => {
+        if (!updateModelAfterSpanEdit.current) return;
+
+        updateModelAfterSpanEdit.current = false;
+        calc();
+    }, [measurements, calc]);
 
     return (
+        <>
         <section className="w-1/4 p-4 bg-asideground h-full">
             {/*SCELTA CUSTOM/PRESETS*/}
             <div className="w-full flex gap-4 items-center justify-center text-xs pt-4">
-                <button value="0"
+                <button type="button" value="0"
                         onClick={(e) => handleChangeGeometryTab(e, Number(e.currentTarget.value))}
                         className={`w-2/4 cursor-pointer p-4 ${geometryTab === 0 ? 'bg-tableground rounded-t-lg font-bold text-primary' : ''}`}
                 >Custom
                 </button>
-                <button value="1"
+                <button type="button" value="1"
                         onClick={(e) => handleChangeGeometryTab(e, Number(e.currentTarget.value))}
                         className={`w-2/4 cursor-pointer p-4 ${geometryTab === 1 ? 'bg-tableground rounded-t-lg font-bold text-primary' : ''}`}
                 >Presets
@@ -479,7 +495,7 @@ export default function MeasurementsInput() {
             </div>
 
             <div className={`${geometryTab === 0 ? 'block' : 'hidden'} bg-tableground rounded-tr-lg w-full gap-2 flex items-center justify-center text-xs py-4`}>
-                <button value="0"
+                <button type="button" value="0"
                         onClick={(e) => handleChange(e, Number(e.currentTarget.value))}
                         className={`flex gap-1 cursor-pointer rounded-lg py-3 px-2 ${customTab === 0 ? 'bg-titleground border border-2 border-strokes' : ''}`}
                 >
@@ -487,7 +503,7 @@ export default function MeasurementsInput() {
                            height={16}/>
                     Strutture
                 </button>
-                <button value="1"
+                <button type="button" value="1"
                         onClick={(e) => handleChange(e, Number(e.currentTarget.value))}
                         className={`flex gap-1 cursor-pointer rounded-lg py-3 px-2 ${customTab === 1 ? 'bg-titleground border border-2 border-strokes' : ''}`}
                 >
@@ -525,7 +541,7 @@ export default function MeasurementsInput() {
                                             <p className="uppercase text-xsm font-semibold">Numero
                                                 pilastri</p>
                                             <div className="flex gap-2">
-                                                <button onClick={() => editPillars(0)}
+                                                <button type="button" onClick={() => editPillars(0)}
                                                         className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                     <Image src="/minus.svg" alt="icona elemento precedente" width={12}
                                                            height={12} aria-hidden/>
@@ -539,7 +555,7 @@ export default function MeasurementsInput() {
                                                             : measurements.pillars
                                                     }
                                                 </div>
-                                                <button onClick={() => editPillars(1)}
+                                                <button type="button" onClick={() => editPillars(1)}
                                                         className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                     <Image src="/plus.svg" alt="icona elemento precedente" width={12}
                                                            height={12} aria-hidden/>
@@ -550,9 +566,9 @@ export default function MeasurementsInput() {
                                         {measurements.pillars === '10' &&
                                             <>
                                                 <div className="flex flex-col gap-2">
-                                                    <p className="uppercase text-xsm font-semibold">Campate a destra</p>
+                                                    <p className="uppercase text-xsm font-semibold">Campate a sinistra</p>
                                                     <div className="flex gap-2">
-                                                        <button onClick={() => editSpans(0, 'right')}
+                                                        <button type="button" onClick={() => editSpans(0, 'right')}
                                                                 className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                             <Image src="/minus.svg" alt="icona elemento precedente"
                                                                    width={12}
@@ -566,7 +582,7 @@ export default function MeasurementsInput() {
                                                                 : measurements.spansRight
                                                             }
                                                         </div>
-                                                        <button onClick={() => editSpans(1, 'right')}
+                                                        <button type="button" onClick={() => editSpans(1, 'right')}
                                                                 className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                             <Image src="/plus.svg" alt="icona elemento precedente"
                                                                    width={12}
@@ -576,9 +592,9 @@ export default function MeasurementsInput() {
                                                 </div>
 
                                                 <div className="flex flex-col gap-2">
-                                                    <p className="uppercase text-xsm font-semibold">Campate a sinistra</p>
+                                                    <p className="uppercase text-xsm font-semibold">Campate a destra</p>
                                                     <div className="flex gap-2">
-                                                        <button onClick={() => editSpans(0, 'left')}
+                                                        <button type="button" onClick={() => editSpans(0, 'left')}
                                                                 className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                             <Image src="/minus.svg" alt="icona elemento precedente"
                                                                    width={12}
@@ -591,7 +607,7 @@ export default function MeasurementsInput() {
                                                                 : measurements.spansLeft
                                                             }
                                                         </div>
-                                                        <button onClick={() => editSpans(1, 'left')}
+                                                        <button type="button" onClick={() => editSpans(1, 'left')}
                                                                 className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                             <Image src="/plus.svg" alt="icona elemento precedente"
                                                                    width={12}
@@ -607,7 +623,7 @@ export default function MeasurementsInput() {
                                                 <p className="uppercase text-xsm font-semibold">Numero
                                                     {Number(measurements.pillars) > 3 ? ' altezze' : ' falde'}</p>
                                                 <div className="flex gap-2">
-                                                    <button onClick={() => editPitches(0, Number(measurements.pillars))}
+                                                    <button type="button" onClick={() => editPitches(0, Number(measurements.pillars))}
                                                             className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                         <Image src="/prev.svg" alt="icona elemento precedente"
                                                                width={16} height={16} aria-hidden/>
@@ -616,7 +632,7 @@ export default function MeasurementsInput() {
                                                         className="flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
                                                         {measurements.pitches === '' ? '-' : setPitchesLabel(measurements.pitches as string)}
                                                     </div>
-                                                    <button onClick={() => editPitches(1, Number(measurements.pillars))}
+                                                    <button type="button" onClick={() => editPitches(1, Number(measurements.pillars))}
                                                             className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                         <Image src="/next.svg" alt="icona elemento successivo"
                                                                width={16} height={16} aria-hidden/>
@@ -643,7 +659,7 @@ export default function MeasurementsInput() {
                                             <div className="flex flex-col gap-2">
                                                 <p className="uppercase text-xsm font-semibold">Struttura</p>
                                                 <div className="flex gap-2">
-                                                    <button onClick={() => editStructures(0)}
+                                                    <button type="button" onClick={() => editStructures(0)}
                                                             className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                         <Image src="/prev.svg" alt="icona elemento precedente"
                                                                width={16} height={16} aria-hidden/>
@@ -652,7 +668,7 @@ export default function MeasurementsInput() {
                                                         className="flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
                                                         {measurements.structureType === '' ? '-' : setStructureLabel(measurements.structureType as string)}
                                                     </div>
-                                                    <button onClick={() => editStructures(1)}
+                                                    <button type="button" onClick={() => editStructures(1)}
                                                             className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                         <Image src="/next.svg" alt="icona elemento successivo"
                                                                width={16} height={16} aria-hidden/>
@@ -752,7 +768,7 @@ export default function MeasurementsInput() {
                                             <div className="flex gap-4 mt-2">
                                                 <div
                                                     className="flex gap-2 w-full">
-                                                    <button onClick={() => editDome(0)}
+                                                    <button type="button" onClick={() => editDome(0)}
                                                             className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                         <Image src="/prev.svg" alt="icona elemento precedente"
                                                                width={16}
@@ -762,7 +778,7 @@ export default function MeasurementsInput() {
                                                         className="uppercase flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
                                                         {measurements.dome === '' ? '-' : setDomeLabel(measurements.dome!)}
                                                     </div>
-                                                    <button onClick={() => editDome(1)}
+                                                    <button type="button" onClick={() => editDome(1)}
                                                             className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                         <Image src="/next.svg" alt="icona elemento successivo"
                                                                width={16}
@@ -896,7 +912,7 @@ export default function MeasurementsInput() {
                                             </FormControl>
 
                                             <div className={`${insulation === '5G' ? 'block' : 'hidden'} flex gap-2`}>
-                                                <button onClick={() => editSubInsulation(0)}
+                                                <button type="button" onClick={() => editSubInsulation(0)}
                                                         className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                     <Image src="/prev.svg" alt="icona elemento precedente" width={16}
                                                            height={16} aria-hidden/>
@@ -905,7 +921,7 @@ export default function MeasurementsInput() {
                                                     className="uppercase flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
                                                     {subInsulation === '' ? '-' : setSubInsulationLabel(subInsulation)}
                                                 </div>
-                                                <button onClick={() => editSubInsulation(1)}
+                                                <button type="button" onClick={() => editSubInsulation(1)}
                                                         className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                     <Image src="/next.svg" alt="icona elemento successivo" width={16}
                                                            height={16} aria-hidden/>
@@ -1033,19 +1049,19 @@ export default function MeasurementsInput() {
                                     <div className="flex flex-col gap-4">
                                         <div className="text-xs">
                                             <div className="flex flex-wrap gap-2">
-                                                <button
+                                                <button type="button"
                                                     className="cursor-pointer rounded-lg w-44 h-44 border-2 border-strokes border">
                                                     <Image className="object-cover w-[200px] h-[172px] rounded-lg" src="/screenshots/shed.webp" width={150} height={150} alt="preset preview"/>
                                                 </button>
-                                                <button
+                                                <button type="button"
                                                     className="cursor-pointer rounded-lg w-44 h-44 border-2 border-strokes border">
                                                     <Image className="object-cover w-[200px] h-[172px] rounded-lg" src="/screenshots/4p.webp" width={150} height={150} alt="preset preview"/>
                                                 </button>
-                                                <button
+                                                <button type="button"
                                                     className="cursor-pointer rounded-lg w-44 h-44 border-2 border-strokes border">
                                                     <Image className="object-cover w-[200px] h-[172px] rounded-lg" src="/screenshots/6p.webp" width={150} height={150} alt="preset preview"/>
                                                 </button>
-                                                <button
+                                                <button type="button"
                                                     className="cursor-pointer rounded-lg w-44 h-44 border-2 border-strokes border">
                                                     <Image className="object-cover w-[200px] h-[172px] rounded-lg" src="/screenshots/8p.webp" width={150} height={150} alt="preset preview"/>
                                                 </button>
@@ -1061,5 +1077,68 @@ export default function MeasurementsInput() {
                 </div>
             </div>
         </section>
+
+
+            {pillars && pillars === 10 &&
+                <div>
+                    <button type="button" onClick={() => {
+                        updateModelAfterSpanEdit.current = true;
+                        editSpans(1, 'left');
+                    }}
+                            className="bg-white z-100 absolute top-[50%] right-[5dvw] cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
+                        <Image src="/plus.svg" alt="icona elemento successivo"
+                               width={12}
+                               height={12} aria-hidden/>
+                    </button>
+
+                    <button type="button" onClick={() => {
+                        updateModelAfterSpanEdit.current = true;
+                        editSpans(1, 'right');
+                    }}
+                            className="bg-white z-100 absolute top-[50%] left-[25%] cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
+                        <Image src="/plus.svg" alt="icona elemento successivo"
+                               width={12}
+                               height={12} aria-hidden/>
+                    </button>
+                </div>
+            }
+            {
+                pillars && pillars === 10 &&
+                <div className="z-100 absolute top-[10%] left-[50%] translate-x-[-25%] flex gap-2 justify-center items-center">
+                    {new Array(spansRight).fill(0).map((el, i) => {
+                        return (
+                            <button
+                                type="button"
+                                key={`right-${i}`}
+                                className="flex items-center justify-center bg-asideground h-12 w-12 cursor-pointer rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0"
+                                onClick={() => {
+                                    updateModelAfterSpanEdit.current = true;
+                                    editSpans(0, 'right');
+                                }}
+                            >
+                                S{i+1}
+                            </button>
+                        )
+                    })}
+                    {spansLeft && new Array(spansLeft).fill(0).map((el, i) => {
+                        return (
+                            <button
+                                type="button"
+                                key={`left-${i}`}
+                                className="flex items-center justify-center bg-asideground h-12 w-12 cursor-pointer rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0"
+                                onClick={() => {
+                                    updateModelAfterSpanEdit.current = true;
+                                    editSpans(0, 'left');
+                                }}
+                            >
+                            D{i+1}
+                            </button>
+                        )
+                    })}
+                </div>
+
+            }
+
+        </>
     )
 }
