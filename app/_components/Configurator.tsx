@@ -53,6 +53,7 @@ import BasesS from "@/app/_components/_structure/_sails/BasesS";
 import PillarsS from "@/app/_components/_structure/_sails/PillarsS";
 import BeamsS from "@/app/_components/_structure/_sails/BeamsS";
 import CoveringS from "@/app/_components/_structure/_sails/CoveringS";
+import PurlinsS from "@/app/_components/_structure/_sails/PurlinsS";
 extend({InstancedUniformsMesh});
 
 export default function Configurator() {
@@ -224,6 +225,7 @@ export default function Configurator() {
             {pillars && pillars === 10 &&
                 <>
                     <CoveringS material={redMatcapMaterial}/>
+                    <PurlinsS material={matcapMaterial}/>
                     <BeamsS material={matcapMaterial} />
                     <PillarsS material={matcapMaterial} />
                     <BasesS material={matcapMaterial} />
