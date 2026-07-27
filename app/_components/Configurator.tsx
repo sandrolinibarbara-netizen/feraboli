@@ -72,29 +72,38 @@ export default function Configurator() {
     const localPlaneRight = new THREE.Plane( new THREE.Vector3( 1, 0, 0 ), 0);
 
     const baseModel = useGLTF('/pilastro.glb');
+    console.log(baseModel);
+
     const structureModels = {
-        domeCoveringSpherical: (baseModel.scene.children[14] as THREE.Mesh).geometry,
+        domeCoveringSpherical: (baseModel.scene.children[22] as THREE.Mesh).geometry,
         domeCoveringRight: (baseModel.scene.children[10] as THREE.Mesh).geometry,
         domeCoveringLeft: (baseModel.scene.children[9] as THREE.Mesh).geometry,
+        domeCoveringLamRight: (baseModel.scene.children[24] as THREE.Mesh).geometry,
+        domeCoveringLamLeft: (baseModel.scene.children[26] as THREE.Mesh).geometry,
         domePurlinsRight: (baseModel.scene.children[11] as THREE.Mesh).geometry,
+        domePurlinsOmegaCentral: (baseModel.scene.children[14] as THREE.Mesh).geometry,
         domePurlinsCentral: (baseModel.scene.children[12] as THREE.Mesh).geometry,
+        domePurlinsOmega: (baseModel.scene.children[14] as THREE.Mesh).geometry,
         domePurlinsLeft: (baseModel.scene.children[12] as THREE.Mesh).geometry,
         domeBeamsRight: (baseModel.scene.children[8] as THREE.Mesh).geometry,
         domeBeamsLeft: (baseModel.scene.children[8] as THREE.Mesh).geometry,
         domePillarsRight: (baseModel.scene.children[7] as THREE.Mesh).geometry,
         domePillarsLeft: (baseModel.scene.children[13] as THREE.Mesh).geometry,
+        coveringLamRight: (baseModel.scene.children[23] as THREE.Mesh).geometry,
+        coveringLamLeft: (baseModel.scene.children[25] as THREE.Mesh).geometry,
         coveringRight: (baseModel.scene.children[3] as THREE.Mesh).geometry,
         coveringLeft: (baseModel.scene.children[4] as THREE.Mesh).geometry,
+        purlinsOmega: (baseModel.scene.children[15] as THREE.Mesh).geometry,
         purlinsRight: (baseModel.scene.children[5] as THREE.Mesh).geometry,
         purlinsLeft: (baseModel.scene.children[6] as THREE.Mesh).geometry,
         beamsRight: (baseModel.scene.children[1] as THREE.Mesh).geometry,
         beamsLeft: (baseModel.scene.children[1] as THREE.Mesh).geometry,
-        capitalPortalSOpp: (baseModel.scene.children[20] as THREE.Mesh).geometry,
+        capitalPortalSOpp: (baseModel.scene.children[17] as THREE.Mesh).geometry,
         capitalPortalS: (baseModel.scene.children[18] as THREE.Mesh).geometry,
         capitalPortalD: (baseModel.scene.children[16] as THREE.Mesh).geometry,
-        capitalStrutsSOpp: (baseModel.scene.children[19] as THREE.Mesh).geometry,
-        capitalStrutsS: (baseModel.scene.children[17] as THREE.Mesh).geometry,
-        capitalStrutsD: (baseModel.scene.children[21] as THREE.Mesh).geometry,
+        capitalStrutsSOpp: (baseModel.scene.children[20] as THREE.Mesh).geometry,
+        capitalStrutsS: (baseModel.scene.children[21] as THREE.Mesh).geometry,
+        capitalStrutsD: (baseModel.scene.children[19] as THREE.Mesh).geometry,
         pillars: (baseModel.scene.children[0] as THREE.Mesh).geometry,
         bases: (baseModel.scene.children[2] as THREE.Mesh).geometry,
     }
@@ -117,7 +126,7 @@ export default function Configurator() {
             <Plane args={[width ? width + 10 : 0, length ? length + 10 : 0]} rotation={[-Math.PI / 2, 0, 0]}
                    position={[0, 0, length ? -length / 2 : 0]}/>
 
-                {pillars && pillars !== 10 &&
+            {pillars && pillars !== 10 &&
                 <>
                     {domeType === 'S'
                         ? <>

@@ -4,6 +4,7 @@ import {InstancedMesh} from "three";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {State} from "@/app/_types/State";
 import {getDefinedValues} from "@/app/_utils/getDefinedValues";
+import {useBeamClippingMaterials} from "@/app/_utils/useBeamClippingMaterials";
 
 export default function PortalSingle({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
@@ -16,8 +17,10 @@ export default function PortalSingle({material} : {material : THREE.Material}) {
     const roofIncline = useMeasurementsStore((state: State) => state.roofIncline);
     const eavesHeight = useMeasurementsStore((state: State) => state.eavesHeight);
 
-    const ref = useRef<THREE.Mesh|null>(null);
+    const firstRef = useRef<THREE.Mesh|null>(null);
+    const secondRef = useRef<THREE.Mesh|null>(null);
     const portalSGeometry = baseModel?.capitalPortalS;
+    const beamClipping = useBeamClippingMaterials(material);
 
     const requiredValues = getDefinedValues({
         pillars,
@@ -30,22 +33,32 @@ export default function PortalSingle({material} : {material : THREE.Material}) {
         eavesHeight
     });
 
-    if (!requiredValues) return null;
+    if (!requiredValues || !beamClipping.ready) return null;
 
-    const effPillars = pitches === 'S' && pillars === 3 ? 1 : 2;
+    const isShed = pitches === "S" && pillars === 3;
+    const effPillars = isShed ? 1 : 2;
+    const frames = (requiredValues.length / requiredValues.interaxleLength) + 1;
+    const firstCount = frames;
+    const secondCount = isShed ? 0 : frames;
+    const firstMaterial = isShed
+        ? beamClipping.materials.primaryLeft
+        : beamClipping.materials.outerLeft;
 
     const PILLARS = () => {
         useLayoutEffect(() => {
-            if (!ref.current) return;
+            if (!firstRef.current) return;
+            if (secondCount > 0 && !secondRef.current) return;
 
             const {pillars, pillarsHeight, width, length, interaxleLength, roofIncline, eavesHeight} = requiredValues;
             const mesh = new THREE.Object3D();
+            let firstIndex = 0;
+            let secondIndex = 0;
 
             for(let i = 0; i < (effPillars * (length / interaxleLength)) + effPillars; i++) {
                 const remainder = i % 2;
                 let index, height;
 
-                if(pitches === 'S' && pillars === 3) {
+                if(isShed) {
                     index = 1;
                     height = pillarsHeight[index].totalHeight! - 1.03;
                 } else {
@@ -58,15 +71,37 @@ export default function PortalSingle({material} : {material : THREE.Material}) {
                     }
                 }
 
-
                 mesh.position.set(pillarsHeight[index].position! - (width / 2), height, - interaxleLength * Math.floor(i / effPillars));
+                mesh.rotation.set(Math.PI/2, 0 ,0);
                 mesh.updateMatrix();
-                (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
+
+                if (isShed || remainder === 0) {
+                    (firstRef.current as InstancedMesh).setMatrixAt(firstIndex, mesh.matrix);
+                    firstIndex++;
+                } else {
+                    (secondRef.current as InstancedMesh).setMatrixAt(secondIndex, mesh.matrix);
+                    secondIndex++;
+                }
             }
         }, []);
 
         return(
-            <instancedUniformsMesh ref={ref} args={[portalSGeometry, material, (effPillars * (requiredValues.length / requiredValues.interaxleLength)) + effPillars]}></instancedUniformsMesh>
+            <>
+                <instancedUniformsMesh
+                    ref={firstRef}
+                    args={[portalSGeometry, firstMaterial, firstCount]}>
+                </instancedUniformsMesh>
+                {secondCount > 0 &&
+                    <instancedUniformsMesh
+                        ref={secondRef}
+                        args={[
+                            portalSGeometry,
+                            beamClipping.materials.primaryRight,
+                            secondCount
+                        ]}>
+                    </instancedUniformsMesh>
+                }
+            </>
         )
     }
 
