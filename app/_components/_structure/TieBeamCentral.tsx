@@ -29,7 +29,7 @@ export default function TieBeamCentral({material} : {material : THREE.Material})
     if (!requiredValues) return null;
 
     const TIEBEAMCENTRAL = () => {
-        const {length, interaxleLength, interaxleWidth} = requiredValues;
+        const {length, interaxleLength, interaxleWidth, pillarsHeight} = requiredValues;
         const effBeams = (length / interaxleLength) + 1;
         const tieBeamGeometry = new THREE.CylinderGeometry(0.01, 0.01, interaxleWidth, 6);
 

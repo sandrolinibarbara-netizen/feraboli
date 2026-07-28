@@ -14,9 +14,7 @@ export default function MeasurementsInput() {
 
     const [customTab, setCustomTab] = useState(0);
     const [geometryTab, setGeometryTab] = useState(0);
-    const [insulation, setInsulation] = useState('');
-    const [subInsulation, setSubInsulation] = useState('');
-    const updateModelAfterSpanEdit = useRef(false);
+     const updateModelAfterSpanEdit = useRef(false);
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setCustomTab(newValue);
@@ -39,7 +37,11 @@ export default function MeasurementsInput() {
         purlin: '',
         purlinShape:'',
         spansRight: '',
-        spansLeft: ''
+        spansLeft: '',
+        coveringType: '',
+        coveringSubType: '',
+        thicknessTop: '',
+        thicknessBottom: ''
     });
 
     function editPillars(n:number) {
@@ -225,7 +227,7 @@ export default function MeasurementsInput() {
                         break;
                 }
 
-                setMeasurements({...measurements, structureType: newMinValue, roofIncline: roofInclineMin});
+                setMeasurements({...measurements, structureType: newMinValue, roofIncline: roofInclineMin!});
                 break;
             case 1:
                 let newMaxValue, roofInclineMax;
@@ -252,7 +254,7 @@ export default function MeasurementsInput() {
                         break;
                 }
 
-                setMeasurements({...measurements, structureType: newMaxValue, roofIncline: roofInclineMax});
+                setMeasurements({...measurements, structureType: newMaxValue, roofIncline: roofInclineMax!});
                 break;
         }
     }
@@ -263,10 +265,10 @@ export default function MeasurementsInput() {
                         let newMinValue;
                         if(measurements.dome === '') {
                             newMinValue = domeArr[domeArr.length - 1];
-                        } else if(domeArr.indexOf(measurements.dome!) === 0) {
+                        } else if(domeArr.indexOf(measurements.dome) === 0) {
                             newMinValue = domeArr[domeArr.length - 1];
                         } else {
-                            newMinValue = domeArr[domeArr.indexOf(measurements.dome!) - 1]
+                            newMinValue = domeArr[domeArr.indexOf(measurements.dome) - 1]
                         }
                         setMeasurements({...measurements, dome: newMinValue});
                         break;
@@ -275,70 +277,50 @@ export default function MeasurementsInput() {
                         if(measurements.dome === '') {
                             newMaxValue = domeArr[0];
                             console.log(domeArr[0])
-                        } else if(domeArr.indexOf(measurements.dome!) === domeArr.length - 1) {
+                        } else if(domeArr.indexOf(measurements.dome) === domeArr.length - 1) {
                             newMaxValue = domeArr[0];
                         } else {
-                            newMaxValue = domeArr[domeArr.indexOf(measurements.dome!) + 1]
+                            newMaxValue = domeArr[domeArr.indexOf(measurements.dome) + 1]
                         }
                         setMeasurements({...measurements, dome: newMaxValue});
                         break;
                 }
     }
-    // function editInsulation(n:number) {
-    //     const insulationArr = ["5G", "L", "FC"];
-    //
-    //     switch(n) {
-    //         case 0:
-    //             let newMinValue;
-    //             if(insulation === '') {
-    //                 newMinValue = insulationArr[insulationArr.length - 1];
-    //             } else if(insulationArr.indexOf(insulation) === 0) {
-    //                 newMinValue = insulationArr[insulationArr.length - 1];
-    //             } else {
-    //                 newMinValue = insulationArr[insulationArr.indexOf(insulation) - 1]
-    //             }
-    //             console.log(newMinValue)
-    //             setInsulation(newMinValue);
-    //             break;
-    //         case 1:
-    //             let newMaxValue;
-    //             if(insulation === '') {
-    //                 newMaxValue = insulationArr[0];
-    //             } else if(insulationArr.indexOf(insulation) === insulationArr.length - 1) {
-    //                 newMaxValue = insulationArr[0];
-    //             } else {
-    //                 newMaxValue = insulationArr[insulationArr.indexOf(insulation) + 1]
-    //             }
-    //             setInsulation(newMaxValue);
-    //             break;
-    //     }
-    // }
+    function editInsulation(e: string) {
+        setMeasurements({
+            ...measurements,
+            coveringType: e,
+            coveringSubType: '',
+            thicknessTop: '',
+            thicknessBottom: ''
+        })
+    }
     function editSubInsulation(n:number) {
         const subInsulationArr = ["DL", "V"];
 
         switch(n) {
             case 0:
                 let newMinValue;
-                if(subInsulation === '') {
+                if(measurements.coveringSubType === '') {
                     newMinValue = subInsulationArr[subInsulationArr.length - 1];
-                } else if(subInsulationArr.indexOf(subInsulation) === 0) {
+                } else if(subInsulationArr.indexOf(measurements.coveringSubType) === 0) {
                     newMinValue = subInsulationArr[subInsulationArr.length - 1];
                 } else {
-                    newMinValue = subInsulationArr[subInsulationArr.indexOf(subInsulation) - 1]
+                    newMinValue = subInsulationArr[subInsulationArr.indexOf(measurements.coveringSubType) - 1]
                 }
-                console.log(newMinValue)
-                setSubInsulation(newMinValue);
+
+                setMeasurements({...measurements, coveringSubType: newMinValue, thicknessTop: '', thicknessBottom: ''});
                 break;
             case 1:
                 let newMaxValue;
-                if(subInsulation === '') {
+                if(measurements.coveringSubType === '') {
                     newMaxValue = subInsulationArr[0];
-                } else if(subInsulationArr.indexOf(subInsulation) === subInsulationArr.length - 1) {
+                } else if(subInsulationArr.indexOf(measurements.coveringSubType) === subInsulationArr.length - 1) {
                     newMaxValue = subInsulationArr[0];
                 } else {
-                    newMaxValue = subInsulationArr[subInsulationArr.indexOf(subInsulation) + 1]
+                    newMaxValue = subInsulationArr[subInsulationArr.indexOf(measurements.coveringSubType) + 1]
                 }
-                setSubInsulation(newMaxValue);
+                setMeasurements({...measurements, coveringSubType: newMaxValue, thicknessTop: '', thicknessBottom: ''});
                 break;
         }
     }
@@ -424,7 +406,7 @@ export default function MeasurementsInput() {
     //     return label;
     // }
     function setSubInsulationLabel(s:string) {
-        let label = subInsulation;
+        let label = measurements.coveringSubType;
         switch(s) {
             case "DL":
                 label = "Doppia lamiera";
@@ -777,7 +759,7 @@ export default function MeasurementsInput() {
                                                     </button>
                                                     <div
                                                         className="uppercase flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
-                                                        {measurements.dome === '' ? '-' : setDomeLabel(measurements.dome!)}
+                                                        {measurements.dome === '' ? '-' : setDomeLabel(measurements.dome)}
                                                     </div>
                                                     <button type="button" onClick={() => editDome(1)}
                                                             className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
@@ -893,8 +875,8 @@ export default function MeasurementsInput() {
                                             }}>
                                                 <Select
                                                     id="demo-simple-select"
-                                                    value={insulation}
-                                                    onChange={(e) => setInsulation(e.target.value)}
+                                                    value={measurements.coveringType}
+                                                    onChange={(e) => editInsulation(e.target.value)}
                                                     MenuProps={{
                                                         slotProps: {
                                                             list: {
@@ -916,7 +898,7 @@ export default function MeasurementsInput() {
                                                 </Select>
                                             </FormControl>
 
-                                            <div className={`${insulation === '5G' ? 'block' : 'hidden'} flex gap-2`}>
+                                            <div className={`${measurements.coveringType === '5G' ? 'block' : 'hidden'} flex gap-2`}>
                                                 <button type="button" onClick={() => editSubInsulation(0)}
                                                         className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
                                                     <Image src="/prev.svg" alt="icona elemento precedente" width={16}
@@ -924,7 +906,7 @@ export default function MeasurementsInput() {
                                                 </button>
                                                 <div
                                                     className="uppercase flex items-center py-1 px-2 w-full justify-center rounded-lg border-strokes border-2 font-jet text-xs font-semibold">
-                                                    {subInsulation === '' ? '-' : setSubInsulationLabel(subInsulation)}
+                                                    {measurements.coveringSubType === '' ? '-' : setSubInsulationLabel(measurements.coveringSubType)}
                                                 </div>
                                                 <button type="button" onClick={() => editSubInsulation(1)}
                                                         className="cursor-pointer border-2 border-strokes rounded-lg px-2 py-1 focus:border-primary focus:outline-none focus:ring-0">
@@ -934,11 +916,14 @@ export default function MeasurementsInput() {
                                             </div>
 
                                             <div
-                                                className={`${insulation === '5G' && subInsulation === 'DL' ? 'block' : 'hidden'}`}>
+                                                className={`${measurements.coveringType === '5G' && measurements.coveringSubType === 'DL' ? 'block' : 'hidden'}`}>
                                                 <label
                                                     className="flex gap-4 items-center justify-between text-xs whitespace-nowrap">Lamiera
                                                     sup.
                                                     <input
+                                                        value={measurements.thicknessTop}
+                                                        name="thicknessTop"
+                                                        onChange={(e) => validateInput(e)}
                                                         className="w-2/4 p-1 pl-2 rounded-lg border-strokes border-2 font-jet text-xs focus:border-primary focus:outline-none focus:ring-0"
                                                     />
                                                 </label>
@@ -946,17 +931,35 @@ export default function MeasurementsInput() {
                                                     className="mt-1 flex gap-4 items-center justify-between text-xs whitespace-nowrap">Lamiera
                                                     inf.
                                                     <input
+                                                        value={measurements.thicknessBottom}
+                                                        name="thicknessBottom"
+                                                        onChange={(e) => validateInput(e)}
                                                         className="w-2/4 p-1 pl-2 rounded-lg border-strokes border-2 font-jet text-xs focus:border-primary focus:outline-none focus:ring-0"
                                                     />
                                                 </label>
                                             </div>
                                             <div
-                                                className={`${insulation === '5G' && subInsulation === 'V' ? 'block' : 'hidden'}`}>
+                                                className={`${measurements.coveringType === '5G' && measurements.coveringSubType === 'V' ? 'block' : 'hidden'}`}>
                                                 <label
                                                     className="flex gap-4 items-center justify-between text-xs whitespace-nowrap">Lamiera
                                                     sup.
                                                     <input
+                                                        value={measurements.thicknessTop}
+                                                        name="thicknessTop"
+                                                        onChange={(e) => validateInput(e)}
                                                         className="w-2/4 p-1 pl-2 rounded-lg border-strokes border-2 font-jet text-xs focus:border-primary focus:outline-none focus:ring-0"
+                                                    />
+                                                </label>
+                                            </div>
+                                            <div
+                                                className={`${measurements.coveringType === 'L' ? 'block' : 'hidden'}`}>
+                                                <label
+                                                    className="flex gap-4 items-center justify-between text-xs whitespace-nowrap">Spessore
+                                                    <input
+                                                        value={measurements.thicknessTop}
+                                                        name="thicknessTop"
+                                                        onChange={(e) => validateInput(e)}
+                                                        className="w-3/4 p-1 pl-2 rounded-lg border-strokes border-2 font-jet text-xs focus:border-primary focus:outline-none focus:ring-0"
                                                     />
                                                 </label>
                                             </div>

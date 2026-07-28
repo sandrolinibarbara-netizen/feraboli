@@ -87,6 +87,7 @@ export default function TieBeamVert({material} : {material : THREE.Material}) {
                 const {
                     beamLength,
                     eavesHeight,
+                    pillarsHeight,
                     roofInclineRad,
                     width,
                     interaxleLength,

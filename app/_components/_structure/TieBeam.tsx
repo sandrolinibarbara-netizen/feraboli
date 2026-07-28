@@ -30,7 +30,7 @@ export default function TieBeam({material} : {material : THREE.Material}) {
     if (!requiredValues) return null;
 
     const TIEBEAM = () => {
-        const {length, interaxleLength, width, interaxleWidth, pitches} = requiredValues;
+        const {length, interaxleLength, width, interaxleWidth, pitches, pillarsHeight} = requiredValues;
         const hasSecondHeight = secondHeight !== undefined;
         const frames = (length / interaxleLength) + 1;
         const effWidth = hasSecondHeight ? width / 2 : width;

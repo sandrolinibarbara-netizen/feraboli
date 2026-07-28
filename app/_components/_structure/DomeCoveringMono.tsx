@@ -7,6 +7,7 @@ import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 
 export default function DomeCoveringMono({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
+    const coveringType = useMeasurementsStore((state: State) => state.coveringType.type);
     const domeWidth = useMeasurementsStore((state: State) => state.domeWidth);
     const eavesHeight = useMeasurementsStore((state: State) => state.eavesHeight);
     const roofIncline = useMeasurementsStore((state: State) => state.roofIncline);
@@ -16,7 +17,9 @@ export default function DomeCoveringMono({material} : {material : THREE.Material
     const secondHeightOffset = useMeasurementsStore((state: State) => state.secondHeightOffset);
 
     const ref = useRef<THREE.Mesh|null>(null);
-    const coveringGeometry = baseModel?.domeCoveringLeft;
+    const coveringGeometry = coveringType === 'L'
+        ? baseModel?.domeCoveringLamLeft
+        : baseModel?.domeCoveringLeft;
     const requiredValues = getDefinedValues({
         domeWidth,
         eavesHeight,

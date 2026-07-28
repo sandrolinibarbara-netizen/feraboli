@@ -7,6 +7,7 @@ import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 
 export default function CoveringS({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
+    const coveringType = useMeasurementsStore((state: State) => state.coveringType.type);
     const sails = useMeasurementsStore((state: State) => state.sails);
     const beamLength = useMeasurementsStore((state: State) => state.spansInfo.beams);
     const eavesHeight = useMeasurementsStore((state: State) => state.eavesHeight);
@@ -21,7 +22,9 @@ export default function CoveringS({material} : {material : THREE.Material}) {
     const purlinType = useMeasurementsStore((state: State) => state.purlinType);
 
     const ref = useRef<THREE.Mesh|null>(null);
-    const coveringGeometry = baseModel?.coveringLeft;
+    const coveringGeometry = coveringType === 'L'
+        ? baseModel?.coveringLamLeft
+        : baseModel?.coveringLeft;
 
     const primaryRoofValues = getDefinedValues({
         beamLength,

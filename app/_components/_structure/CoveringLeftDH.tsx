@@ -7,6 +7,7 @@ import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 
 export default function CoveringLeftDH({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
+    const coveringType = useMeasurementsStore((state: State) => state.coveringType.type);
     const pillars = useMeasurementsStore((state: State) => state.pillars);
     const pitches = useMeasurementsStore((state: State) => state.pitches);
     const coveringLengthDH = useMeasurementsStore((state: State) => state.coveringLengthDH);
@@ -17,10 +18,11 @@ export default function CoveringLeftDH({material} : {material : THREE.Material})
     const secondCoveringLength = useMeasurementsStore((state: State) => state.secondCoveringLength);
     const secondRoofIncline = useMeasurementsStore((state: State) => state.secondRoofIncline);
     const purlinType = useMeasurementsStore((state: State) => state.purlinType);
-    const interaxleWidth = useMeasurementsStore((state: State) => state.interaxleWidth);
 
     const ref = useRef<THREE.Mesh|null>(null);
-    const coveringGeometry = baseModel?.coveringLeft;
+    const coveringGeometry = coveringType === 'L'
+        ? baseModel?.coveringLamLeft
+        : baseModel?.coveringLeft;
     const secondRoofValues = getDefinedValues({
         secondCoveringLength,
         eavesHeight,

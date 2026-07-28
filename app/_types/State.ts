@@ -34,20 +34,24 @@ export type Geometry = {
     bases: THREE.BufferGeometry,
 }
 export interface Measurements {
-    pillars: string | number | undefined,
-    pitches: string | number | undefined,
-    structureType: string | undefined,
-    roofIncline: string | number | undefined,
-    eavesHeight: string | number | undefined,
-    secondHeight: string | number | undefined,
-    length: string | number | undefined,
-    width: string | number | undefined,
-    interaxleLength: string | number | undefined,
-    dome: string | undefined,
-    purlin: string | undefined,
-    purlinShape: string | undefined,
-    spansRight: string | undefined,
-    spansLeft: string | undefined
+    pillars: string,
+    pitches: string,
+    structureType: string,
+    roofIncline: string,
+    eavesHeight: string,
+    secondHeight: string,
+    length: string,
+    width: string,
+    interaxleLength: string,
+    dome: string,
+    purlin: string,
+    purlinShape: string,
+    spansRight: string,
+    spansLeft: string,
+    coveringType: string,
+    coveringSubType: string,
+    thicknessTop: string,
+    thicknessBottom: string
 }
 export interface Pillar {
     heightToAdd: number | undefined,
@@ -121,6 +125,14 @@ export interface State {
     domeHeight: number | undefined,
     domeWidth: number | undefined,
     secondHeightOffset: number,
+    coveringType: {
+        type: string | undefined,
+        subType: string | undefined,
+        thickness: {
+            top: number | undefined,
+            bottom: number | undefined
+        }
+    }
     pillarsHeight: Pillar[] | undefined,
     instancesInformation: {
         pillars: InstanceInformation[] | undefined

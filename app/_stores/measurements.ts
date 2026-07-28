@@ -72,6 +72,23 @@ export const useMeasurementsStore = create<State>((set, get) => ({
                 state.purlinType = measurements.purlin;
                 state.purlinShape = measurements.purlinShape;
 
+                state.coveringType.type = measurements.coveringType;
+                if(measurements.coveringSubType !== '') {
+                    state.coveringType.subType = measurements.coveringSubType;
+                } else {
+                    state.coveringType.subType = undefined;
+                }
+                if(measurements.thicknessTop !== '') {
+                    state.coveringType.thickness.top = Number(measurements.thicknessTop);
+                } else {
+                    state.coveringType.thickness.top = undefined;
+                }
+                if(measurements.thicknessBottom !== '') {
+                    state.coveringType.thickness.bottom = Number(measurements.thicknessBottom);
+                } else {
+                    state.coveringType.thickness.bottom = undefined;
+                }
+
                 if(measurements.spansRight) {
                     state.spansRight = Number(measurements.spansRight);
                 }
@@ -239,7 +256,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
             const halfPillars = Math.ceil(Number(state.pillars) / 2);
 
             // pillars height, BUT ALSO pillars position
-            for(let i= 0; i < (state.pillars === 10 ? state.sails : state.pillars); i++) {
+            for(let i= 0; i < (state.pillars === 10 ? state.sails! : state.pillars); i++) {
                     const pillar:Pillar = {
                         heightToAdd: undefined,
                         totalHeight: undefined,
@@ -256,7 +273,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
 
                     // HEIGHT
                     // EXCEPTION: SAILS
-                    if(state.pillars === 10) {
+                    if(state.sails && state.pillars === 10) {
 
                         if(state.spansRight && state.spansRight === 1 &&  state.spansLeft && state.spansLeft > 2) {
                                 if(i === 0) {
@@ -293,7 +310,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
                                 pillar.heightToAdd = state.pillarsHeight[0].heightToAdd;
                             } else if(state.spansLeft && (i === state.sails - 2 || i === state.sails - state.spansLeft)) {
                                 if(state.spansLeft === 2) {
-                                    pillar.heightToAdd = state.pillarsHeight[1].heightToAdd + 0.5;
+                                    pillar.heightToAdd = state.pillarsHeight[1].heightToAdd! + 0.5;
                                 } else {
                                     pillar.heightToAdd = state.pillarsHeight[1].heightToAdd;
                                 }
@@ -302,16 +319,16 @@ export const useMeasurementsStore = create<State>((set, get) => ({
                             }
                             if(state.spansLeft && i === state.sails - state.spansLeft - 1) {
                                 if(state.spansLeft === 2) {
-                                    pillar.totalHeight = state.pillarsHeight[1].totalHeight + pillar.heightToAdd + 0.5;
+                                    pillar.totalHeight = state.pillarsHeight[1].totalHeight! + pillar.heightToAdd! + 0.5;
                                 } else {
                                     if(state.spansLeft !== 1) {
-                                        pillar.totalHeight = state.pillarsHeight[1].totalHeight + pillar.heightToAdd;
+                                        pillar.totalHeight = state.pillarsHeight[1].totalHeight! + pillar.heightToAdd!;
                                     } else {
                                         pillar.totalHeight = state.pillarsHeight[1].totalHeight;
                                     }
                                 }
                             } else {
-                                pillar.totalHeight = state.eavesHeight + pillar.heightToAdd;
+                                pillar.totalHeight = state.eavesHeight + pillar.heightToAdd!;
                             }
                         }
 
@@ -354,12 +371,12 @@ export const useMeasurementsStore = create<State>((set, get) => ({
                 }
             }
 
-            if(state.pillars === 10) {
+            if(state.sails && state.pillars === 10 && state.length && state.width && state.interaxleLength) {
                 const basesInfo = [];
 
                 for (let i = 0; i < (state.sails * (state.length / state.interaxleLength)) + state.sails; i++) {
                     const position = [
-                        state.pillarsHeight[i - (state.sails * Math.floor(i / state.sails))].position! - (state.width / 2),
+                        state.pillarsHeight![i - (state.sails * Math.floor(i / state.sails))].position! - (state.width / 2),
                         0,
                         -state.interaxleLength * Math.floor(i / state.sails)
                     ];
@@ -389,6 +406,14 @@ export const useMeasurementsStore = create<State>((set, get) => ({
     domeHeight: undefined,
     domeWidth: undefined,
     secondHeightOffset: 0,
+    coveringType: {
+        type: undefined,
+        subType: undefined,
+        thickness: {
+            top: undefined,
+            bottom: undefined
+        }
+    },
     pillarsHeight: undefined,
     instancesInformation: {pillars: undefined},
     instanceShown: undefined,
