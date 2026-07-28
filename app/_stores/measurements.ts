@@ -21,6 +21,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
     interaxleWidth: undefined,
     domeType: undefined,
     purlinType: undefined,
+    purlinShape: undefined,
     // OBJECT: %, grad e rad
     // TECNICAMENTE, anche questo sarebbe derivabile,
     // MA devono avere la possibilità di inserire misure arbitrarie
@@ -69,6 +70,7 @@ export const useMeasurementsStore = create<State>((set, get) => ({
                 state.pitches = measurements.pitches;
                 state.domeType = measurements.dome;
                 state.purlinType = measurements.purlin;
+                state.purlinShape = measurements.purlinShape;
 
                 if(measurements.spansRight) {
                     state.spansRight = Number(measurements.spansRight);

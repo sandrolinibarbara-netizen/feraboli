@@ -1,0 +1,88 @@
+import React, {useLayoutEffect, useRef} from "react";
+import * as THREE from "three";
+import {InstancedMesh} from "three";
+import {useMeasurementsStore} from "@/app/_stores/measurements";
+import {State} from "@/app/_types/State";
+import {getDefinedValues} from "@/app/_utils/getDefinedValues";
+
+export default function PurlinsOmegaRight({material} : {material : THREE.Material}) {
+    const baseModel = useMeasurementsStore((state: State) => state.geometry);
+    const pillars = useMeasurementsStore((state: State) => state.pillars);
+    const pitches = useMeasurementsStore((state: State) => state.pitches);
+    const halfPurlins = useMeasurementsStore((state: State) => state.halfPurlins);
+    const eavesHeight = useMeasurementsStore((state: State) => state.eavesHeight);
+    const roofIncline = useMeasurementsStore((state: State) => state.roofIncline);
+    const width = useMeasurementsStore((state: State) => state.width);
+    const length = useMeasurementsStore((state: State) => state.length);
+    const coveringLength = useMeasurementsStore((state: State) => state.coveringLength);
+    const purlinType = useMeasurementsStore((state: State) => state.purlinType);
+    const interaxleWidth = useMeasurementsStore((state: State) => state.interaxleWidth);
+    const secondHeightOffset = useMeasurementsStore((state: State) => state.secondHeightOffset);
+
+    const ref = useRef<THREE.Mesh|null>(null);
+    const purlinGeometry = baseModel?.purlinsOmega;
+    const requiredValues = getDefinedValues({
+        halfPurlins,
+        eavesHeight,
+        coveringLength,
+        roofInclineRad: roofIncline.rad,
+        width,
+        length,
+        pillars
+    });
+
+    if (!requiredValues || (requiredValues.pillars < 3 && pitches?.includes('M'))) {
+        return null;
+    }
+
+    const PURLINRIGHT = () => {
+        useLayoutEffect(() => {
+            if (!ref.current) return;
+
+            const {halfPurlins, eavesHeight, coveringLength, roofInclineRad, width, length, pillars} = requiredValues;
+            const mesh = new THREE.Object3D();
+
+            const beamPosition = (interaxleWidth && pillars > 3 && pitches === 'DH')
+                ? (interaxleWidth / 2) + 0.5
+                : (width / 2)
+
+            const base = coveringLength * Math.cos(roofInclineRad);
+            const height = coveringLength * Math.sin(roofInclineRad);
+            const purlinGap = ((coveringLength / halfPurlins) + 0.1) > 1.52
+                ? ((coveringLength / halfPurlins) + 0.1)
+                : 1.52;
+            const purlinOffset = purlinType === 'light' ? 0.21 : 0;
+
+            for(let i = 0; i < halfPurlins; i++) {
+                const h = ((purlinGap * i) + 0.1) * Math.sin(roofInclineRad);
+                const b = Math.sqrt(Math.pow((purlinGap * i), 2) - Math.pow(h, 2))
+                const purlinHeight = i === halfPurlins - 1
+                                                    ? eavesHeight + height - purlinOffset + secondHeightOffset - (0.308 * Math.sin(roofInclineRad))
+                                                    : eavesHeight + h - purlinOffset + secondHeightOffset;
+
+                const purlinPos = i === 0
+                    ? beamPosition - 0.1
+                    : i === halfPurlins - 1
+                            ? beamPosition - base + 0.308
+                            : beamPosition - 0.1 - b;
+
+                mesh.scale.z = length + 1;
+                const shift =  ref.current.geometry.boundingBox!.max.x;
+                ref.current.geometry.translate(-shift, 0, 0);
+                mesh.position.set(purlinPos, purlinHeight, -length / 2);
+                mesh.rotation.set(0, 0, -roofInclineRad)
+                ref.current.geometry.attributes.position.needsUpdate = true;
+                mesh.updateMatrix();
+                (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
+            }
+        }, []);
+
+        return(
+            <instancedUniformsMesh ref={ref} args={[purlinGeometry, material, requiredValues.halfPurlins]}></instancedUniformsMesh>
+        )
+    }
+
+    // eslint-disable-next-line react-hooks/static-components
+    return <PURLINRIGHT/>
+
+}

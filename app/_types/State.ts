@@ -45,6 +45,7 @@ export interface Measurements {
     interaxleLength: string | number | undefined,
     dome: string | undefined,
     purlin: string | undefined,
+    purlinShape: string | undefined,
     spansRight: string | undefined,
     spansLeft: string | undefined
 }
@@ -77,6 +78,7 @@ export interface State {
     interaxleWidth: number | undefined,
     domeType: string | undefined,
     purlinType: string | undefined,
+    purlinShape: string | undefined,
     roofIncline: {
         percentage: number | undefined,
         grad: number | undefined,

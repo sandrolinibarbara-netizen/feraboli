@@ -45,15 +45,19 @@ import Reticular from "@/app/_components/_structure/Reticular";
 import ReticularSingle from "@/app/_components/_structure/ReticularSingle";
 import ReticularSingleOpp from "@/app/_components/_structure/ReticularSingleOpp";
 import DomeCoveringSpherical from "@/app/_components/_structure/DomeCoveringSpherical";
-import DomePurlinsLeftSP from "@/app/_components/_structure/DomePurlinsLeftSP";
-import DomePurlinsRightSP from "@/app/_components/_structure/DomePurlinsRightSP";
-import DomePillarsRightSP from "@/app/_components/_structure/DomePillarsRightSP";
-import DomePillarsLeftSP from "@/app/_components/_structure/DomePillarsLeftSP";
 import BasesS from "@/app/_components/_structure/_sails/BasesS";
 import PillarsS from "@/app/_components/_structure/_sails/PillarsS";
 import BeamsS from "@/app/_components/_structure/_sails/BeamsS";
 import CoveringS from "@/app/_components/_structure/_sails/CoveringS";
 import PurlinsS from "@/app/_components/_structure/_sails/PurlinsS";
+import PurlinsOmegaRight from "@/app/_components/_structure/PurlinsOmegaRight";
+import PurlinsOmegaLeft from "@/app/_components/_structure/PurlinsOmegaLeft";
+import PurlinsOmegaRightDH from "@/app/_components/_structure/PurlinsOmegaRightDH";
+import PurlinsOmegaLeftDH from "@/app/_components/_structure/PurlinsOmegaLeftDH";
+import DomePurlinsOmegaCentral from "@/app/_components/_structure/DomePurlinsOmegaCentral";
+import DomePurlinsOmegaLeft from "@/app/_components/_structure/DomePurlinsOmegaLeft";
+import DomePurlinsOmegaRight from "@/app/_components/_structure/DomePurlinsOmegaRight";
+import DomePurlinsOmegaMono from "@/app/_components/_structure/DomePurlinsOmegaMono";
 extend({InstancedUniformsMesh});
 
 export default function Configurator() {
@@ -65,6 +69,7 @@ export default function Configurator() {
     const length = useMeasurementsStore((state: State) => state.length);
     const domeType = useMeasurementsStore((state: State) => state.domeType);
     const secondHeight = useMeasurementsStore((state: State) => state.secondHeight);
+    const purlinShape = useMeasurementsStore((state: State) => state.purlinShape);
 
     const setGeometry = useMeasurementsStore((state: State) => state.setGeometry);
 
@@ -72,14 +77,13 @@ export default function Configurator() {
     const localPlaneRight = new THREE.Plane( new THREE.Vector3( 1, 0, 0 ), 0);
 
     const baseModel = useGLTF('/pilastro.glb');
-    console.log(baseModel);
 
     const structureModels = {
-        domeCoveringSpherical: (baseModel.scene.children[22] as THREE.Mesh).geometry,
+        domeCoveringSpherical: (baseModel.scene.children[26] as THREE.Mesh).geometry,
         domeCoveringRight: (baseModel.scene.children[10] as THREE.Mesh).geometry,
         domeCoveringLeft: (baseModel.scene.children[9] as THREE.Mesh).geometry,
-        domeCoveringLamRight: (baseModel.scene.children[24] as THREE.Mesh).geometry,
-        domeCoveringLamLeft: (baseModel.scene.children[26] as THREE.Mesh).geometry,
+        domeCoveringLamRight: (baseModel.scene.children[23] as THREE.Mesh).geometry,
+        domeCoveringLamLeft: (baseModel.scene.children[25] as THREE.Mesh).geometry,
         domePurlinsRight: (baseModel.scene.children[11] as THREE.Mesh).geometry,
         domePurlinsOmegaCentral: (baseModel.scene.children[14] as THREE.Mesh).geometry,
         domePurlinsCentral: (baseModel.scene.children[12] as THREE.Mesh).geometry,
@@ -89,8 +93,8 @@ export default function Configurator() {
         domeBeamsLeft: (baseModel.scene.children[8] as THREE.Mesh).geometry,
         domePillarsRight: (baseModel.scene.children[7] as THREE.Mesh).geometry,
         domePillarsLeft: (baseModel.scene.children[13] as THREE.Mesh).geometry,
-        coveringLamRight: (baseModel.scene.children[23] as THREE.Mesh).geometry,
-        coveringLamLeft: (baseModel.scene.children[25] as THREE.Mesh).geometry,
+        coveringLamRight: (baseModel.scene.children[22] as THREE.Mesh).geometry,
+        coveringLamLeft: (baseModel.scene.children[24] as THREE.Mesh).geometry,
         coveringRight: (baseModel.scene.children[3] as THREE.Mesh).geometry,
         coveringLeft: (baseModel.scene.children[4] as THREE.Mesh).geometry,
         purlinsOmega: (baseModel.scene.children[15] as THREE.Mesh).geometry,
@@ -131,44 +135,55 @@ export default function Configurator() {
                     {domeType === 'S'
                         ? <>
                             <DomeCoveringMono material={matcapMaterial}/>
-                            <DomePurlinsMono material={matcapMaterial}/>
+                            {purlinShape === 'c'
+                                ? <DomePurlinsMono material={matcapMaterial}/>
+                                : <DomePurlinsOmegaMono material={matcapMaterial}/>
+                            }
                             <DomeBeamMono material={matcapMaterial}/>
                         </>
-                        : domeType !== 'SP'
-                            ?   <>
+                        : <>
+                            {domeType === 'SP'
+                                ? <DomeCoveringSpherical material={redMatcapMaterial}/>
+                                : <>
                                     <DomeCoveringLeft material={redMatcapMaterialClippedLeft}/>
                                     <DomeCoveringRight material={redMatcapMaterialClippedRight}/>
+                                  </>
+                            }
+                            {purlinShape === 'c'
+                                ? <>
                                     <DomePurlinsCentral material={matcapMaterial}/>
                                     <DomePurlinsLeft material={matcapMaterial}/>
                                     <DomePurlinsRight material={matcapMaterial}/>
-                                    <DomeBeamsLeft material={matcapMaterialClippedLeft}/>
-                                    <DomeBeamsRight material={matcapMaterialClippedRight}/>
-                                </>
-                            : <></>
+                                  </>
+                                : <>
+                                    <DomePurlinsOmegaCentral material={matcapMaterial}/>
+                                    <DomePurlinsOmegaLeft material={matcapMaterial}/>
+                                    <DomePurlinsOmegaRight material={matcapMaterial}/>
+                                  </>
+                            }
+                            <DomeBeamsLeft material={matcapMaterialClippedLeft}/>
+                            <DomeBeamsRight material={matcapMaterialClippedRight}/>
+                          </>
                     }
 
-                    {
-                        domeType === 'SP'
-                            ? <>
-                                <DomeCoveringSpherical material={redMatcapMaterial}/>
-                                <DomePurlinsLeftSP material={matcapMaterial}/>
-                                <DomePurlinsRightSP material={matcapMaterial}/>
-                                <DomePillarsRightSP material={matcapMaterial}/>
-                                <DomePillarsLeftSP material={matcapMaterial}/>
-                              </>
-                            : <>
-                                <DomePillarsRight material={matcapMaterial}/>
-                                <DomePillarsLeft material={matcapMaterial}/>
-                              </>
-                    }
+                    <DomePillarsRight material={matcapMaterial}/>
+                    <DomePillarsLeft material={matcapMaterial}/>
 
                     {
                         pitches === 'DH' && secondHeight &&
                         <>
                             <CoveringRightDH material={redMatcapMaterial}/>
                             <CoveringLeftDH material={redMatcapMaterial}/>
-                            <PurlinsRightDH material={matcapMaterial}/>
-                            <PurlinsLeftDH material={matcapMaterial}/>
+                            { purlinShape === 'c'
+                                ? <>
+                                    <PurlinsRightDH material={matcapMaterial}/>
+                                    <PurlinsLeftDH material={matcapMaterial}/>
+                                </>
+                                : <>
+                                    <PurlinsOmegaRightDH material={matcapMaterial}/>
+                                    <PurlinsOmegaLeftDH material={matcapMaterial}/>
+                                </>
+                            }
                             <BeamsLeftDH material={matcapMaterial}/>
                             <BeamsRightDH material={matcapMaterial}/>
                         </>
@@ -178,8 +193,16 @@ export default function Configurator() {
                         material={pillars === 1 && pitches === 'D' ? redMatcapMaterialClippedRight : redMatcapMaterial}/>
                     <CoveringLeft
                         material={pitches?.includes('S') || (pillars === 1 && pitches === 'D') ? redMatcapMaterialClippedLeft : redMatcapMaterial}/>
-                    <PurlinsRight material={matcapMaterial}/>
-                    <PurlinsLeft material={matcapMaterial}/>
+                    { purlinShape === 'c'
+                        ? <>
+                            <PurlinsRight material={matcapMaterial}/>
+                            <PurlinsLeft material={matcapMaterial}/>
+                          </>
+                        : <>
+                            <PurlinsOmegaRight material={matcapMaterial}/>
+                            <PurlinsOmegaLeft material={matcapMaterial}/>
+                          </>
+                    }
                     <BeamsLeft
                         material={(pillars < 3 && pitches?.includes('M')) ? matcapMaterial : matcapMaterialClippedLeft}/>
                     <BeamsRight material={matcapMaterialClippedRight}/>

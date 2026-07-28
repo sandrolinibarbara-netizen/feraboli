@@ -37,6 +37,7 @@ export default function MeasurementsInput() {
         interaxleLength: '',
         dome: '',
         purlin: '',
+        purlinShape:'',
         spansRight: '',
         spansLeft: ''
     });
@@ -836,12 +837,16 @@ export default function MeasurementsInput() {
                                             <h4 className="flex flex-col uppercase text-xsm font-semibold">Forma:</h4>
                                             <div className="flex gap-4 mt-2">
                                                 <label className="flex items-center gap-2">
-                                                    <input className="accent-primary" type="radio"
+                                                    <input onChange={(e) => setMeasurements({...measurements, purlinShape: e.target.value})}
+                                                           value="c"
+                                                           className="accent-primary" type="radio"
                                                            name="purlins-shape"/>
                                                     C
                                                 </label>
                                                 <label className="flex items-center gap-2">
-                                                    <input className="accent-primary" type="radio"
+                                                    <input onChange={(e) => setMeasurements({...measurements, purlinShape: e.target.value})}
+                                                           value="omega"
+                                                           className="accent-primary" type="radio"
                                                            name="purlins-shape"/>
                                                     Omega
                                                 </label>

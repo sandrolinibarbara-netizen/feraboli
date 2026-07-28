@@ -6,75 +6,55 @@ import {State} from "@/app/_types/State";
 import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 import {
     cloneDomeCoveringGeometry,
-    cloneDomePillarGeometry,
-    cloneDomePurlinGeometry,
+    cloneOmegaPurlinGeometry,
     getDomeSphericalCoveringTransform
 } from "@/app/_utils/domeSphericalAlignment";
 
 export default function DomeCoveringSpherical({material}: {material: THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
-    const coveringLength = useMeasurementsStore((state: State) => state.coveringLength);
-    const beamLength = useMeasurementsStore((state: State) => state.beamLength);
     const beamMaxHeight = useMeasurementsStore((state: State) => state.beamMaxHeight);
     const eavesHeight = useMeasurementsStore((state: State) => state.eavesHeight);
-    const roofIncline = useMeasurementsStore((state: State) => state.roofIncline);
     const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
     const domeHeight = useMeasurementsStore((state: State) => state.domeHeight);
     const secondHeightOffset = useMeasurementsStore((state: State) => state.secondHeightOffset);
+    const purlinShape = useMeasurementsStore((state: State) => state.purlinShape);
+    const usesOmegaPurlins = purlinShape !== "c";
 
     const ref = useRef<InstancedMesh | null>(null);
     const coveringGeometry = useMemo(
         () => cloneDomeCoveringGeometry(baseModel?.domeCoveringSpherical),
         [baseModel?.domeCoveringSpherical]
     );
-    const leftPillarGeometry = useMemo(
-        () => cloneDomePillarGeometry(baseModel?.domePillarsLeft),
-        [baseModel?.domePillarsLeft]
-    );
-    const rightPillarGeometry = useMemo(
-        () => cloneDomePillarGeometry(baseModel?.domePillarsRight),
-        [baseModel?.domePillarsRight]
-    );
-    const leftPurlinGeometry = useMemo(
-        () => cloneDomePurlinGeometry(baseModel?.domePurlinsLeft),
-        [baseModel?.domePurlinsLeft]
-    );
-    const rightPurlinGeometry = useMemo(
-        () => cloneDomePurlinGeometry(baseModel?.domePurlinsRight),
-        [baseModel?.domePurlinsRight]
+    const centralPurlinGeometry = useMemo(
+        () => usesOmegaPurlins
+            ? cloneOmegaPurlinGeometry(
+                baseModel?.purlinsOmega,
+                baseModel?.domePurlinsOmegaCentral
+            )
+            : cloneDomeCoveringGeometry(baseModel?.domePurlinsCentral),
+        [
+            baseModel?.domePurlinsCentral,
+            baseModel?.domePurlinsOmegaCentral,
+            baseModel?.purlinsOmega,
+            usesOmegaPurlins
+        ]
     );
     const requiredValues = getDefinedValues({
-        beamLength,
         beamMaxHeight,
+        centralPurlinGeometry,
         coveringGeometry,
-        coveringLength,
         domeHeight,
         eavesHeight,
-        leftPillarGeometry,
-        leftPurlinGeometry,
         length,
-        rightPillarGeometry,
-        rightPurlinGeometry,
-        roofInclinePercentage: roofIncline.percentage,
-        roofInclineRad: roofIncline.rad,
         secondHeightOffset,
         width
     });
 
     useEffect(() => () => {
         coveringGeometry?.dispose();
-        leftPillarGeometry?.dispose();
-        rightPillarGeometry?.dispose();
-        leftPurlinGeometry?.dispose();
-        rightPurlinGeometry?.dispose();
-    }, [
-        coveringGeometry,
-        leftPillarGeometry,
-        leftPurlinGeometry,
-        rightPillarGeometry,
-        rightPurlinGeometry
-    ]);
+        centralPurlinGeometry?.dispose();
+    }, [centralPurlinGeometry, coveringGeometry]);
 
     useLayoutEffect(() => {
         if (!ref.current || !requiredValues) return;
@@ -82,10 +62,7 @@ export default function DomeCoveringSpherical({material}: {material: THREE.Mater
         const transform = getDomeSphericalCoveringTransform(
             requiredValues,
             requiredValues.coveringGeometry,
-            requiredValues.leftPillarGeometry,
-            requiredValues.rightPillarGeometry,
-            requiredValues.leftPurlinGeometry,
-            requiredValues.rightPurlinGeometry
+            requiredValues.centralPurlinGeometry
         );
         const mesh = new THREE.Object3D();
 
