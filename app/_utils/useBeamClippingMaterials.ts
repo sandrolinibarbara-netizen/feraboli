@@ -33,21 +33,21 @@ export function useBeamClippingMaterials(material: THREE.Material) {
         const primaryRightPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
         const outerLeftPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
         const outerRightPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
-        const centerLeftPlane = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0);
-        const centerRightPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0);
 
         const primaryLeftMaterial = material.clone();
         const primaryRightMaterial = material.clone();
-        const primaryCenterLeftMaterial = material.clone();
-        const primaryCenterRightMaterial = material.clone();
+        const primaryBothMaterial = material.clone();
         const outerLeftMaterial = material.clone();
         const outerRightMaterial = material.clone();
 
         primaryLeftMaterial.clippingPlanes = [primaryLeftPlane];
         primaryRightMaterial.clippingPlanes = [primaryRightPlane];
-        // Il modello doppio sul colmo viene diviso tra le due falde.
-        primaryCenterLeftMaterial.clippingPlanes = [primaryLeftPlane, centerLeftPlane];
-        primaryCenterRightMaterial.clippingPlanes = [primaryRightPlane, centerRightPlane];
+        // Sul pilastro centrale il capitello deve rimanere sotto entrambe
+        // le facce inferiori delle travi che si incontrano al colmo.
+        primaryBothMaterial.clippingPlanes = [
+            primaryLeftPlane,
+            primaryRightPlane
+        ];
         outerLeftMaterial.clippingPlanes = [outerLeftPlane];
         outerRightMaterial.clippingPlanes = [outerRightPlane];
 
@@ -59,8 +59,7 @@ export function useBeamClippingMaterials(material: THREE.Material) {
             materials: {
                 primaryLeft: primaryLeftMaterial,
                 primaryRight: primaryRightMaterial,
-                primaryCenterLeft: primaryCenterLeftMaterial,
-                primaryCenterRight: primaryCenterRightMaterial,
+                primaryBoth: primaryBothMaterial,
                 outerLeft: outerLeftMaterial,
                 outerRight: outerRightMaterial,
             }

@@ -5,6 +5,8 @@ import {useMeasurementsStore} from "@/app/_stores/measurements";
 import {State} from "@/app/_types/State";
 import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 import {useTexture} from "@react-three/drei";
+import vertexShader from '../../_shaders/vertex.glsl';
+import fragmentShader from '../../_shaders/fragment.glsl';
 
 export default function Reticular() {
     const pillars = useMeasurementsStore((state: State) => state.pillars);
@@ -77,9 +79,12 @@ export default function Reticular() {
             0.5, 1
         ], 2));
 
-        const material = new THREE.MeshBasicMaterial({
-            color: 0xffffff,
-            map: texture,
+        const material = new THREE.ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms: {
+                uTexture: {value: texture}
+            },
             side: THREE.DoubleSide,
             transparent: true,
             depthWrite: false
@@ -101,6 +106,7 @@ export default function Reticular() {
                 mesh.updateMatrix();
                 (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
             }
+
         }, [effBeams, effWidth, frames, hasSecondHeight, interaxleLength, interaxleWidth, pillarsHeight]);
 
         return (

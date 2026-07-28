@@ -56,6 +56,8 @@ export default function PurlinsOmegaLeft({material} : {material : THREE.Material
                                         ? (((cL + 0.1) / hP) + 0.1)
                                         : 1.52;
             const purlinOffset = purlinType === 'light' ? 0.21 : 0;
+            const centralBeamHeight = eavesHeight
+                + (0 - beamPosition) * Math.tan(roofRad);
 
             for(let i = 0; i < hP; i++) {
                 const h = ((purlinGap * i) + 0.1) * Math.sin(roofRad);
@@ -63,7 +65,7 @@ export default function PurlinsOmegaLeft({material} : {material : THREE.Material
                 const purlinHeight = i === 0
                                                 ? eavesHeight - purlinOffset + secondHeightOffset + (0.308 * Math.sin(roofRad))
                                                 : i === hP - 1 && secondCoveringLength
-                                                    ? eavesHeight + height + 0.1 - purlinOffset + secondHeightOffset
+                                                    ? centralBeamHeight - purlinOffset + secondHeightOffset
                                                     : i === hP - 1
                                                         ? eavesHeight + height - purlinOffset + secondHeightOffset
                                                         : eavesHeight + h - purlinOffset + secondHeightOffset;

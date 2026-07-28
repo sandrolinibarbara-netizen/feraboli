@@ -21,8 +21,7 @@ export default function Struts({material} : {material : THREE.Material}) {
 
     const primaryLeftRef = useRef<THREE.Mesh|null>(null);
     const primaryRightRef = useRef<THREE.Mesh|null>(null);
-    const primaryCenterLeftRef = useRef<THREE.Mesh|null>(null);
-    const primaryCenterRightRef = useRef<THREE.Mesh|null>(null);
+    const primaryCenterRef = useRef<THREE.Mesh|null>(null);
     const outerLeftRef = useRef<THREE.Mesh|null>(null);
     const outerRightRef = useRef<THREE.Mesh|null>(null);
     const strutsDGeometry = baseModel?.capitalStrutsD;
@@ -95,8 +94,7 @@ export default function Struts({material} : {material : THREE.Material}) {
         useLayoutEffect(() => {
             if (groupedPillarIndices.primaryLeft.length && !primaryLeftRef.current) return;
             if (groupedPillarIndices.primaryRight.length && !primaryRightRef.current) return;
-            if (groupedPillarIndices.primaryBoth.length && !primaryCenterLeftRef.current) return;
-            if (groupedPillarIndices.primaryBoth.length && !primaryCenterRightRef.current) return;
+            if (groupedPillarIndices.primaryBoth.length && !primaryCenterRef.current) return;
             if (groupedPillarIndices.outerLeft.length && !outerLeftRef.current) return;
             if (groupedPillarIndices.outerRight.length && !outerRightRef.current) return;
 
@@ -112,7 +110,7 @@ export default function Struts({material} : {material : THREE.Material}) {
             const groupRefs: Record<BeamClippingGroup, React.RefObject<THREE.Mesh|null>> = {
                 primaryLeft: primaryLeftRef,
                 primaryRight: primaryRightRef,
-                primaryBoth: primaryCenterLeftRef,
+                primaryBoth: primaryCenterRef,
                 outerLeft: outerLeftRef,
                 outerRight: outerRightRef
             };
@@ -130,10 +128,6 @@ export default function Struts({material} : {material : THREE.Material}) {
                         const instanceIndex = groupIndices[group];
                         (groupRefs[group].current as InstancedMesh)
                             .setMatrixAt(instanceIndex, mesh.matrix);
-                        if (group === "primaryBoth") {
-                            (primaryCenterRightRef.current as InstancedMesh)
-                                .setMatrixAt(instanceIndex, mesh.matrix);
-                        }
                         groupIndices[group]++;
                     }
                 }
@@ -163,24 +157,14 @@ export default function Struts({material} : {material : THREE.Material}) {
                     </instancedUniformsMesh>
                 }
                 {groupedPillarIndices.primaryBoth.length > 0 &&
-                    <>
-                        <instancedUniformsMesh
-                            ref={primaryCenterLeftRef}
-                            args={[
-                                strutsDGeometry,
-                                beamClipping.materials.primaryCenterLeft,
-                                groupedPillarIndices.primaryBoth.length * frames
-                            ]}>
-                        </instancedUniformsMesh>
-                        <instancedUniformsMesh
-                            ref={primaryCenterRightRef}
-                            args={[
-                                strutsDGeometry,
-                                beamClipping.materials.primaryCenterRight,
-                                groupedPillarIndices.primaryBoth.length * frames
-                            ]}>
-                        </instancedUniformsMesh>
-                    </>
+                    <instancedUniformsMesh
+                        ref={primaryCenterRef}
+                        args={[
+                            strutsDGeometry,
+                            beamClipping.materials.primaryBoth,
+                            groupedPillarIndices.primaryBoth.length * frames
+                        ]}>
+                    </instancedUniformsMesh>
                 }
                 {groupedPillarIndices.outerLeft.length > 0 &&
                     <instancedUniformsMesh

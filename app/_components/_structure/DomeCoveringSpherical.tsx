@@ -8,7 +8,7 @@ import {
     cloneDomeCoveringGeometry,
     cloneOmegaPurlinGeometry,
     getDomeSphericalCoveringTransform
-} from "@/app/_utils/domeSphericalAlignment";
+} from "@/app/_utils/getDomeSphericalAlignment";
 
 export default function DomeCoveringSpherical({material}: {material: THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);

@@ -7,7 +7,7 @@ import {getDefinedValues} from "@/app/_utils/getDefinedValues";
 import {
     cloneOmegaPurlinGeometry,
     getOmegaPurlinWidth
-} from "@/app/_utils/domeSphericalAlignment";
+} from "@/app/_utils/getDomeSphericalAlignment";
 
 export default function DomePurlinsOmegaLeft({material}: {material: THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
