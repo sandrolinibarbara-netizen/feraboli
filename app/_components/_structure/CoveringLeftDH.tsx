@@ -19,10 +19,19 @@ export default function CoveringLeftDH({material} : {material : THREE.Material})
     const secondRoofIncline = useMeasurementsStore((state: State) => state.secondRoofIncline);
     const purlinType = useMeasurementsStore((state: State) => state.purlinType);
 
-    const ref = useRef<THREE.Mesh|null>(null);
+    const coveringRef = useRef<InstancedMesh|null>(null);
+    const supCoveringRef = useRef<InstancedMesh|null>(null);
+    const fcCovering = coveringType === 'FC'
+        ? baseModel?.coveringFCLeft
+        : undefined;
+    const fcCoveringMesh = fcCovering?.children[0] as THREE.Mesh | undefined;
+    const supCoveringMesh = fcCovering?.children[1] as THREE.Mesh | undefined;
     const coveringGeometry = coveringType === 'L'
         ? baseModel?.coveringLamLeft
-        : baseModel?.coveringLeft;
+        : coveringType === 'FC'
+            ? fcCoveringMesh?.geometry
+            : baseModel?.coveringLeft;
+    const supCoveringGeometry = supCoveringMesh?.geometry;
     const secondRoofValues = getDefinedValues({
         secondCoveringLength,
         eavesHeight,
@@ -40,52 +49,94 @@ export default function CoveringLeftDH({material} : {material : THREE.Material})
     });
     const requiredValues = secondRoofValues ?? primaryRoofValues;
 
-    if (!requiredValues) return null;
+    if (
+        !requiredValues
+        || !coveringGeometry
+        || (coveringType === 'FC' && !supCoveringGeometry)
+    ) {
+        return null;
+    }
 
     const COVERINGLEFT = () => {
         const {length} = requiredValues;
+        const activeCoveringLength = secondRoofValues
+            ? secondRoofValues.secondCoveringLength
+            : primaryRoofValues!.coveringLengthDH;
+        const xCount = coveringType === 'FC'
+            ? Math.max(1, Math.floor(activeCoveringLength))
+            : 1;
+        const zCount = Math.floor(length) + 1;
+        const count = xCount * zCount;
 
         useLayoutEffect(() => {
             const purlinOffset = purlinType === 'light' ? 0.18 : 0;
-            if (!ref.current) return;
-
-            if (secondRoofValues) {
-                const {secondCoveringLength, eavesHeight, secondRoofInclineRad, width, length} = secondRoofValues;
-                const mesh = new THREE.Object3D();
-
-                for (let i = 0; i < length + 1; i++) {
-                    mesh.scale.x = secondCoveringLength;
-                    const shift = ref.current.geometry.boundingBox!.max.x;
-                    ref.current.geometry.translate(-shift, 0, 0);
-                    mesh.position.set(-width / 2, eavesHeight - purlinOffset, i === 0 ? 0 : (-i));
-                    mesh.rotation.set(0, Math.PI, -secondRoofInclineRad)
-                    ref.current.geometry.attributes.position.needsUpdate = true;
-                    mesh.updateMatrix();
-                    (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
-                }
-
+            if (
+                !coveringRef.current
+                || (supCoveringGeometry && !supCoveringRef.current)
+            ) {
                 return;
             }
 
-            if (primaryRoofValues) {
-                const {coveringLengthDH, eavesHeight, roofInclineRad, width, length, pillars} = primaryRoofValues;
-                const mesh = new THREE.Object3D();
+            const mesh = new THREE.Object3D();
+            const roofInclineRad = secondRoofValues
+                ? secondRoofValues.secondRoofInclineRad
+                : primaryRoofValues!.roofInclineRad;
+            const beamPosition = secondRoofValues
+                ? -(secondRoofValues.width / 2)
+                : -(primaryRoofValues!.width / 2);
+            const coveringHeight = secondRoofValues
+                ? secondRoofValues.eavesHeight - purlinOffset
+                : primaryRoofValues!.eavesHeight - purlinOffset;
+            const instances = [
+                coveringRef.current,
+                supCoveringRef.current
+            ].filter((instance): instance is InstancedMesh => instance !== null);
 
-                for (let i = 0; i < length + 1; i++) {
-                    mesh.scale.x = pillars === 1 && pitches === 'D' ? coveringLengthDH + 1 : coveringLengthDH;
-                    const shift = ref.current.geometry.boundingBox!.max.x;
-                    ref.current.geometry.translate(-shift, 0, 0);
-                    mesh.position.set(-(width / 2), eavesHeight - purlinOffset, i === 0 ? 0 : (-i));
-                    mesh.rotation.set(0, Math.PI, -roofInclineRad)
-                    ref.current.geometry.attributes.position.needsUpdate = true;
-                    mesh.updateMatrix();
-                    (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
-                }
+            instances.forEach((instance) => {
+                instance.geometry.computeBoundingBox();
+                const shift = instance.geometry.boundingBox!.max.x;
+                instance.geometry.translate(-shift, 0, 0);
+                instance.geometry.attributes.position.needsUpdate = true;
+            });
+
+            for (let i = 0; i < count; i++) {
+                const xIndex = i % xCount;
+                const zIndex = Math.floor(i / xCount);
+
+                mesh.scale.x = coveringType === 'FC'
+                    ? 1
+                    : !secondRoofValues
+                        && primaryRoofValues!.pillars === 1
+                        && pitches === 'D'
+                            ? activeCoveringLength + 1
+                            : activeCoveringLength;
+                mesh.position.set(beamPosition, coveringHeight, -zIndex);
+                mesh.rotation.set(0, Math.PI, -roofInclineRad);
+                mesh.translateX(-xIndex);
+                mesh.updateMatrix();
+                instances.forEach((instance) => {
+                    instance.setMatrixAt(i, mesh.matrix);
+                });
             }
-        }, [])
+
+            instances.forEach((instance) => {
+                instance.instanceMatrix.needsUpdate = true;
+            });
+        }, [activeCoveringLength, count, xCount])
 
         return (
-            <instancedUniformsMesh ref={ref} args={[coveringGeometry, material, length + 1]}></instancedUniformsMesh>
+            <>
+                {supCoveringGeometry &&
+                    <instancedUniformsMesh
+                        ref={supCoveringRef}
+                        args={[supCoveringGeometry, material, count]}>
+                    </instancedUniformsMesh>
+                }
+                <instancedUniformsMesh
+                    ref={coveringRef}
+                    args={[coveringGeometry, material, count]}>
+                </instancedUniformsMesh>
+            </>
         )
     }
 

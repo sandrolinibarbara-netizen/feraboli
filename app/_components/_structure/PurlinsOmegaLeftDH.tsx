@@ -58,7 +58,7 @@ export default function PurlinsOmegaLeftDH({material} : {material : THREE.Materi
                                                 : i === hP - 1 && secondCoveringLength
                                                     ? eavesHeight + height + 0.1 - purlinOffset
                                                     : i === hP - 1
-                                                        ? eavesHeight + height - purlinOffset
+                                                        ? eavesHeight + height - purlinOffset - (0.204 * Math.sin(roofInclineRad))
                                                         : eavesHeight + h - purlinOffset;
 
                 const purlinPos = i === 0
@@ -66,7 +66,7 @@ export default function PurlinsOmegaLeftDH({material} : {material : THREE.Materi
                                             : i === hP - 1 && secondCoveringLength
                                                 ? 0
                                                 : i === hP - 1
-                                                    ? base -(width / 2) + 0.1
+                                                    ? base - (width / 2) - 0.102
                                                     : b -(width / 2) + 0.1;
 
                 mesh.scale.z = length + 1;

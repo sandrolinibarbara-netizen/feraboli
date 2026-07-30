@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useRef} from "react";
+import React, {useEffect, useLayoutEffect, useMemo, useRef} from "react";
 import * as THREE from "three";
 import {InstancedMesh} from "three";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
@@ -15,9 +15,20 @@ export default  function BeamsRightDH({material} : {material : THREE.Material}) 
     const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
     const interaxleLength = useMeasurementsStore((state: State) => state.interaxleLength);
+    const pillarsHeight = useMeasurementsStore((state: State) => state.pillarsHeight);
 
     const ref = useRef<THREE.Mesh|null>(null);
     const beamGeometry = baseModel?.beamsRight;
+    const clipping = useMemo(() => {
+        const plane = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0);
+        const clippedMaterial = material.clone();
+        clippedMaterial.clippingPlanes = [plane];
+
+        return {
+            material: clippedMaterial,
+            plane
+        };
+    }, [material]);
     const requiredValues = getDefinedValues({
         beamLengthDH,
         eavesHeight,
@@ -25,8 +36,26 @@ export default  function BeamsRightDH({material} : {material : THREE.Material}) 
         width,
         length,
         interaxleLength,
-        pillars
+        pillars,
+        pillarsHeight
     });
+
+    useLayoutEffect(() => {
+        if (!requiredValues) return;
+
+        const pillarIndex = Math.floor(requiredValues.pillars / 2);
+        const pillarPosition = requiredValues.pillarsHeight[pillarIndex].position;
+        if (pillarPosition === undefined) return;
+
+        clipping.plane.setFromNormalAndCoplanarPoint(
+            new THREE.Vector3(1, 0, 0),
+            new THREE.Vector3(pillarPosition + 0.095 - requiredValues.width / 2, 0, 0)
+        );
+    }, [clipping, requiredValues]);
+
+    useEffect(() => () => {
+        clipping.material.dispose();
+    }, [clipping]);
 
     if (!requiredValues || (requiredValues.pillars < 3 && pitches?.includes('M'))) {
         return null;
@@ -36,7 +65,7 @@ export default  function BeamsRightDH({material} : {material : THREE.Material}) 
         useLayoutEffect(() => {
             if (!ref.current) return;
 
-            const {beamLengthDH, eavesHeight, roofInclineRad, width, length, interaxleLength, pillars} = requiredValues;
+            const {beamLengthDH, eavesHeight, roofInclineRad, width, length, interaxleLength} = requiredValues;
             const mesh = new THREE.Object3D();
 
             for (let i = 0; i < (length / interaxleLength) + 1; i++) {
@@ -53,7 +82,7 @@ export default  function BeamsRightDH({material} : {material : THREE.Material}) 
 
         return (
             <instancedUniformsMesh ref={ref}
-                                   args={[beamGeometry, material, (requiredValues.length / requiredValues.interaxleLength) + 1]}>
+                                   args={[beamGeometry, clipping.material, (requiredValues.length / requiredValues.interaxleLength) + 1]}>
             </instancedUniformsMesh>
         )
     }

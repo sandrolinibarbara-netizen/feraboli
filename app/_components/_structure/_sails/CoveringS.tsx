@@ -1,9 +1,53 @@
-import React, {useLayoutEffect, useRef} from "react";
+import React, {useLayoutEffect, useMemo, useRef} from "react";
 import * as THREE from "three";
 import {InstancedMesh} from "three";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
-import {State} from "@/app/_types/State";
+import {SpanInformation, State} from "@/app/_types/State";
 import {getDefinedValues} from "@/app/_utils/getDefinedValues";
+
+type SpanLengths = {
+    firstSpans: SpanInformation,
+    middleSpans: SpanInformation,
+    nearCentralSpans: SpanInformation,
+    centralSpan: SpanInformation
+};
+
+function getCoveringSpanLength(
+    beamIndex: number,
+    lastBeamIndex: number,
+    centralBeamIndex: number,
+    spansLeft: number | undefined,
+    spansRight: number,
+    spanLengths: SpanLengths
+) {
+    if (!spansLeft) {
+        return beamIndex === 0
+            ? spanLengths.firstSpans.beamLength
+            : spanLengths.middleSpans.beamLength;
+    }
+
+    if (beamIndex === 0) {
+        return spansRight === 1
+            ? spanLengths.firstSpans.beamLength - 1.0
+            : spanLengths.firstSpans.beamLength;
+    }
+
+    if (beamIndex === lastBeamIndex) {
+        return spansLeft === 2
+            ? spanLengths.firstSpans.beamLength - 1.0
+            : spanLengths.firstSpans.beamLength;
+    }
+
+    if (beamIndex === centralBeamIndex) {
+        return spanLengths.centralSpan.beamLength;
+    }
+
+    if (Math.abs(beamIndex - centralBeamIndex) === 1) {
+        return spanLengths.nearCentralSpans.beamLength;
+    }
+
+    return spanLengths.middleSpans.beamLength;
+}
 
 export default function CoveringS({material} : {material : THREE.Material}) {
     const baseModel = useMeasurementsStore((state: State) => state.geometry);
@@ -21,10 +65,19 @@ export default function CoveringS({material} : {material : THREE.Material}) {
     const interaxleWidth = useMeasurementsStore((state: State) => state.interaxleWidth);
     const purlinType = useMeasurementsStore((state: State) => state.purlinType);
 
-    const ref = useRef<THREE.Mesh|null>(null);
+    const coveringRef = useRef<InstancedMesh|null>(null);
+    const supCoveringRef = useRef<InstancedMesh|null>(null);
+    const fcCovering = coveringType === 'FC'
+        ? baseModel?.coveringFCLeft
+        : undefined;
+    const fcCoveringMesh = fcCovering?.children[0] as THREE.Mesh | undefined;
+    const supCoveringMesh = fcCovering?.children[1] as THREE.Mesh | undefined;
     const coveringGeometry = coveringType === 'L'
         ? baseModel?.coveringLamLeft
-        : baseModel?.coveringLeft;
+        : coveringType === 'FC'
+            ? fcCoveringMesh?.geometry
+            : baseModel?.coveringLeft;
+    const supCoveringGeometry = supCoveringMesh?.geometry;
 
     const primaryRoofValues = getDefinedValues({
         beamLength,
@@ -41,52 +94,93 @@ export default function CoveringS({material} : {material : THREE.Material}) {
     });
     const requiredValues = primaryRoofValues;
 
-    if (!requiredValues) return null;
+    if (
+        !requiredValues
+        || !coveringGeometry
+        || (coveringType === 'FC' && !supCoveringGeometry)
+    ) {
+        return null;
+    }
 
     const BEAMSLEFT = () => {
-        const {length, interaxleLength, sails} = requiredValues;
+        const {
+            beamLength,
+            length,
+            interaxleLength,
+            sails,
+            spansRight
+        } = requiredValues;
+        const beamsPerRow = sails - 1;
+        const lastBeamIndex = beamsPerRow - 1;
+        const centralBeamIndex = spansRight;
+        const coveringSpanLengths = useMemo(
+            () => Array.from(
+                {length: beamsPerRow},
+                (_, beamIndex) => getCoveringSpanLength(
+                    beamIndex,
+                    lastBeamIndex,
+                    centralBeamIndex,
+                    spansLeft,
+                    spansRight,
+                    beamLength
+                )
+            ),
+            [
+                beamLength,
+                beamsPerRow,
+                centralBeamIndex,
+                lastBeamIndex,
+                spansRight
+            ]
+        );
+        const fcTilesPerRow = coveringSpanLengths.reduce(
+            (total, spanLength) => total + Math.max(1, Math.floor(spanLength)),
+            0
+        );
+        const zCount = Math.ceil(length);
+        const standardRows = Math.ceil(length / interaxleLength);
+        const standardCount = standardRows * beamsPerRow;
+        const count = coveringType === 'FC'
+            ? fcTilesPerRow * zCount
+            : standardCount;
 
         useLayoutEffect(() => {
-            if (!ref.current) return;
+            if (
+                !coveringRef.current
+                || (supCoveringGeometry && !supCoveringRef.current)
+            ) {
+                return;
+            }
+
             if (primaryRoofValues) {
-                const {purlinType, spansRight, pillarsHeight, width, beamLength, eavesHeight, roofInclineRad, interaxleWidth, length, interaxleLength, sails} = primaryRoofValues;
+                const {purlinType, spansRight, pillarsHeight, width, eavesHeight, roofInclineRad, interaxleWidth, interaxleLength, sails} = primaryRoofValues;
                 const purlinOffset = purlinType === 'light' ? 0.18 : 0;
                 const mesh = new THREE.Object3D();
                 const beamsPerRow = sails - 1;
                 const lastBeamIndex = beamsPerRow - 1;
                 const centralBeamIndex = spansRight;
+                const instances = [
+                    coveringRef.current,
+                    supCoveringRef.current
+                ].filter((instance): instance is InstancedMesh => instance !== null);
 
-                ref.current.geometry.computeBoundingBox();
-                const shift = ref.current.geometry.boundingBox?.max.x ?? 0;
-                ref.current.geometry.translate(-shift, 0, 0);
-                ref.current.geometry.attributes.position.needsUpdate = true;
+                instances.forEach((instance) => {
+                    instance.geometry.computeBoundingBox();
+                    const shift = instance.geometry.boundingBox?.max.x ?? 0;
+                    instance.geometry.translate(-shift, 0, 0);
+                    instance.geometry.attributes.position.needsUpdate = true;
+                });
 
-                for (let i = 0; i < (((length / interaxleLength) + 1) * beamsPerRow); i++) {
-                    const beamIndex = i % beamsPerRow;
-                    const rowIndex = Math.floor(i / beamsPerRow);
-                    let scale, rotation, verticalOffset: number;
-
-                    if(!spansLeft) {
-                        scale = beamIndex === 0
-                            ? beamLength.firstSpans.beamLength
-                            : beamLength.middleSpans.beamLength;
-                    } else if(beamIndex === 0 || beamIndex === lastBeamIndex) {
-                        if(spansLeft === 2 || spansRight === 1) {
-                            scale = beamLength.firstSpans.beamLength - 1.0;
-                        } else {
-                            scale = beamLength.firstSpans.beamLength;
-                        }
-                    } else if(beamIndex === centralBeamIndex) {
-                        scale = beamLength.centralSpan.beamLength;
-                    } else if(Math.abs(beamIndex - centralBeamIndex) === 1) {
-                        scale = beamLength.nearCentralSpans.beamLength;
-                    } else {
-                        scale = beamLength.middleSpans.beamLength;
-                    }
-
+                const setCoveringTransform = (
+                    beamIndex: number,
+                    spanLength: number,
+                    zPosition: number,
+                    xIndex?: number
+                ) => {
+                    let rotation, verticalOffset: number;
                     if(spansLeft && beamIndex >= centralBeamIndex) {
                         rotation = roofInclineRad;
-                        verticalOffset = eavesHeight + scale * Math.sin(roofInclineRad);
+                        verticalOffset = eavesHeight + spanLength * Math.sin(roofInclineRad);
                     } else {
                         rotation = -roofInclineRad;
                         verticalOffset = eavesHeight;
@@ -113,25 +207,81 @@ export default function CoveringS({material} : {material : THREE.Material}) {
                         - (width / 2)
                         - positionOffset;
 
-                    mesh.scale.set(scale, 1, interaxleLength);
                     mesh.position.set(
                         beamPosition,
                         verticalOffset - purlinOffset,
-                        -interaxleLength * rowIndex
+                        zPosition
                     );
                     mesh.rotation.set(0, Math.PI, rotation);
+                    if (xIndex !== undefined) {
+                        mesh.scale.set(1, 1, 1);
+                        mesh.translateX(-xIndex);
+                    } else {
+                        mesh.scale.set(spanLength, 1, interaxleLength);
+                    }
                     mesh.updateMatrix();
-                    (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
+                };
+
+                if (coveringType === 'FC') {
+                    let instanceIndex = 0;
+
+                    for (let zIndex = 0; zIndex < zCount; zIndex++) {
+                        coveringSpanLengths.forEach((spanLength, beamIndex) => {
+                            const xCount = Math.max(1, Math.floor(spanLength));
+
+                            for (let xIndex = 0; xIndex < xCount; xIndex++) {
+                                setCoveringTransform(
+                                    beamIndex,
+                                    spanLength,
+                                    -(zIndex + 0.5),
+                                    xIndex
+                                );
+                                instances.forEach((instance) => {
+                                    instance.setMatrixAt(instanceIndex, mesh.matrix);
+                                });
+                                instanceIndex++;
+                            }
+                        });
+                    }
+                } else {
+                    for (let i = 0; i < standardCount; i++) {
+                        const beamIndex = i % beamsPerRow;
+                        const rowIndex = Math.floor(i / beamsPerRow);
+                        setCoveringTransform(
+                            beamIndex,
+                            coveringSpanLengths[beamIndex],
+                            -interaxleLength * (rowIndex + 0.5)
+                        );
+                        instances.forEach((instance) => {
+                            instance.setMatrixAt(i, mesh.matrix);
+                        });
+                    }
                 }
 
-                (ref.current as InstancedMesh).instanceMatrix.needsUpdate = true;
+                instances.forEach((instance) => {
+                    instance.instanceMatrix.needsUpdate = true;
+                });
             }
-        }, []);
+        }, [
+            count,
+            coveringSpanLengths,
+            standardCount,
+            zCount
+        ]);
 
         return (
-            <instancedUniformsMesh ref={ref}
-                                   args={[coveringGeometry, material, ((length / interaxleLength) + 1) * (sails - 1)]}>
-            </instancedUniformsMesh>
+            <>
+                {supCoveringGeometry &&
+                    <instancedUniformsMesh
+                        ref={supCoveringRef}
+                        args={[supCoveringGeometry, material, count]}>
+                    </instancedUniformsMesh>
+                }
+                <instancedUniformsMesh
+                    ref={coveringRef}
+                    args={[coveringGeometry, material, count]}>
+                </instancedUniformsMesh>
+            </>
         )
     }
 

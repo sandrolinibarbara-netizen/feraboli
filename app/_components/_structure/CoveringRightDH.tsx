@@ -17,10 +17,19 @@ export default function CoveringRightDH({material} : {material : THREE.Material}
     const length = useMeasurementsStore((state: State) => state.length);
     const purlinType = useMeasurementsStore((state: State) => state.purlinType);
 
-    const ref = useRef<THREE.Mesh|null>(null);
+    const coveringRef = useRef<InstancedMesh|null>(null);
+    const supCoveringRef = useRef<InstancedMesh|null>(null);
+    const fcCovering = coveringType === 'FC'
+        ? baseModel?.coveringFCRight
+        : undefined;
+    const fcCoveringMesh = fcCovering?.children[0] as THREE.Mesh | undefined;
+    const supCoveringMesh = fcCovering?.children[1] as THREE.Mesh | undefined;
     const coveringGeometry = coveringType === 'L'
         ? baseModel?.coveringLamRight
-        : baseModel?.coveringRight;
+        : coveringType === 'FC'
+            ? fcCoveringMesh?.geometry
+            : baseModel?.coveringRight;
+    const supCoveringGeometry = supCoveringMesh?.geometry;
     const requiredValues = getDefinedValues({
         coveringLengthDH,
         eavesHeight,
@@ -30,32 +39,82 @@ export default function CoveringRightDH({material} : {material : THREE.Material}
         pillars
     });
 
-    if (!requiredValues || (requiredValues.pillars < 3 && pitches?.includes('M'))) {
+    if (
+        !requiredValues
+        || !coveringGeometry
+        || (coveringType === 'FC' && !supCoveringGeometry)
+        || (requiredValues.pillars < 3 && pitches?.includes('M'))
+    ) {
         return null;
     }
 
     const COVERINGRIGHT = () => {
+        const {coveringLengthDH, length} = requiredValues;
+        const xCount = coveringType === 'FC'
+            ? Math.max(1, Math.floor(coveringLengthDH))
+            : 1;
+        const zCount = Math.floor(length) + 1;
+        const count = xCount * zCount;
+
         useLayoutEffect(() => {
             const purlinOffset = purlinType === 'light' ? 0.18 : 0;
-            if (!ref.current) return;
-
-            const {coveringLengthDH, eavesHeight, roofInclineRad, width, length, pillars} = requiredValues;
-            const mesh = new THREE.Object3D();
-
-            for (let i = 0; i < length + 1; i++) {
-                mesh.scale.x = pillars === 1 && pitches === 'D' ? coveringLengthDH + 1 : coveringLengthDH;
-                const shift = ref.current.geometry.boundingBox!.min.x;
-                ref.current.geometry.translate(-shift, 0, 0);
-                mesh.position.set((width / 2), eavesHeight - purlinOffset, i === 0 ? 0 : (-i));
-                mesh.rotation.set(0, Math.PI, roofInclineRad)
-                ref.current.geometry.attributes.position.needsUpdate = true;
-                mesh.updateMatrix();
-                (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
+            if (
+                !coveringRef.current
+                || (supCoveringGeometry && !supCoveringRef.current)
+            ) {
+                return;
             }
-        }, [])
+
+            const {coveringLengthDH, eavesHeight, roofInclineRad, width, pillars} = requiredValues;
+            const mesh = new THREE.Object3D();
+            const instances = [
+                coveringRef.current,
+                supCoveringRef.current
+            ].filter((instance): instance is InstancedMesh => instance !== null);
+
+            instances.forEach((instance) => {
+                instance.geometry.computeBoundingBox();
+                const shift = instance.geometry.boundingBox!.min.x;
+                instance.geometry.translate(-shift, 0, 0);
+                instance.geometry.attributes.position.needsUpdate = true;
+            });
+
+            for (let i = 0; i < count; i++) {
+                const xIndex = i % xCount;
+                const zIndex = Math.floor(i / xCount);
+
+                mesh.scale.x = coveringType === 'FC'
+                    ? 1
+                    : pillars === 1 && pitches === 'D'
+                        ? coveringLengthDH + 1
+                        : coveringLengthDH;
+                mesh.position.set(width / 2, eavesHeight - purlinOffset, -zIndex);
+                mesh.rotation.set(0, Math.PI, roofInclineRad);
+                mesh.translateX(xIndex);
+                mesh.updateMatrix();
+                instances.forEach((instance) => {
+                    instance.setMatrixAt(i, mesh.matrix);
+                });
+            }
+
+            instances.forEach((instance) => {
+                instance.instanceMatrix.needsUpdate = true;
+            });
+        }, [count, xCount])
 
         return (
-            <instancedUniformsMesh ref={ref} args={[coveringGeometry, material, requiredValues.length + 1]}></instancedUniformsMesh>
+            <>
+                {supCoveringGeometry &&
+                    <instancedUniformsMesh
+                        ref={supCoveringRef}
+                        args={[supCoveringGeometry, material, count]}>
+                    </instancedUniformsMesh>
+                }
+                <instancedUniformsMesh
+                    ref={coveringRef}
+                    args={[coveringGeometry, material, count]}>
+                </instancedUniformsMesh>
+            </>
         )
     }
 

@@ -65,8 +65,14 @@ export default function BeamsS({material} : {material : THREE.Material}) {
                         scale = beamIndex === 0
                             ? beamLength.firstSpans.beamLength
                             : beamLength.middleSpans.beamLength;
-                    } else if(beamIndex === 0 || beamIndex === lastBeamIndex) {
-                        if(spansLeft === 2 || spansRight === 1) {
+                    } else if(beamIndex === 0) {
+                        if(spansRight === 1) {
+                            scale = beamLength.firstSpans.beamLength - 1.0;
+                        } else {
+                            scale = beamLength.firstSpans.beamLength;
+                        }
+                    } else if(beamIndex === lastBeamIndex) {
+                        if(spansLeft === 2) {
                             scale = beamLength.firstSpans.beamLength - 1.0;
                         } else {
                             scale = beamLength.firstSpans.beamLength;

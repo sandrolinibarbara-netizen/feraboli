@@ -60,8 +60,19 @@ export default function PurlinsS({material} : {material : THREE.Material}) {
                     : beamLength.middleSpans;
             }
 
-            if (beamIndex === 0 || beamIndex === lastBeamIndex) {
-                const beamScale = spansLeft === 2 || spansRight === 1
+            if (beamIndex === 0) {
+                const beamScale = spansRight === 1
+                    ? beamLength.firstSpans.beamLength - 1
+                    : beamLength.firstSpans.beamLength;
+
+                return {
+                    ...beamLength.firstSpans,
+                    beamLength: beamScale
+                };
+            }
+
+            if (beamIndex === lastBeamIndex) {
+                const beamScale = spansLeft === 2
                     ? beamLength.firstSpans.beamLength - 1
                     : beamLength.firstSpans.beamLength;
 

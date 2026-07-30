@@ -16,10 +16,19 @@ export default function DomeCoveringMono({material} : {material : THREE.Material
     const domeHeight = useMeasurementsStore((state: State) => state.domeHeight);
     const secondHeightOffset = useMeasurementsStore((state: State) => state.secondHeightOffset);
 
-    const ref = useRef<THREE.Mesh|null>(null);
+    const coveringRef = useRef<InstancedMesh|null>(null);
+    const supCoveringRef = useRef<InstancedMesh|null>(null);
+    const fcCovering = coveringType === 'FC'
+        ? baseModel?.domeCoveringFCLeft
+        : undefined;
+    const fcCoveringMesh = fcCovering?.children[0] as THREE.Mesh | undefined;
+    const supCoveringMesh = fcCovering?.children[1] as THREE.Mesh | undefined;
     const coveringGeometry = coveringType === 'L'
         ? baseModel?.domeCoveringLamLeft
-        : baseModel?.domeCoveringLeft;
+        : coveringType === 'FC'
+            ? fcCoveringMesh?.geometry
+            : baseModel?.domeCoveringLeft;
+    const supCoveringGeometry = supCoveringMesh?.geometry;
     const requiredValues = getDefinedValues({
         domeWidth,
         eavesHeight,
@@ -29,31 +38,90 @@ export default function DomeCoveringMono({material} : {material : THREE.Material
         domeHeight
     });
 
-    if (!requiredValues) return null;
+    if (
+        !requiredValues
+        || !coveringGeometry
+        || (coveringType === 'FC' && !supCoveringGeometry)
+    ) {
+        return null;
+    }
 
     const DOMECOVERINGLEFT = () => {
-        useLayoutEffect(() => {
-            if (!ref.current) return;
+        const {domeWidth, length, roofInclineRad} = requiredValues;
+        const activeCoveringLength = domeWidth / Math.cos(roofInclineRad);
+        const xCount = coveringType === 'FC'
+            ? Math.max(1, Math.floor(activeCoveringLength))
+            : 1;
+        const zCount = Math.floor(length) + 1;
+        const count = xCount * zCount;
 
-            const {domeWidth, eavesHeight, roofInclineRad, length, beamMaxHeight, domeHeight} = requiredValues;
+        useLayoutEffect(() => {
+            if (
+                !coveringRef.current
+                || (supCoveringGeometry && !supCoveringRef.current)
+            ) {
+                return;
+            }
+
+            const {domeWidth, eavesHeight, roofInclineRad, beamMaxHeight, domeHeight} = requiredValues;
             const mesh = new THREE.Object3D();
             const ip = (domeWidth / 2) / Math.cos(roofInclineRad);
             const hToAdd = ip * Math.sin(roofInclineRad);
+            const instances = [
+                coveringRef.current,
+                supCoveringRef.current
+            ].filter((instance): instance is InstancedMesh => instance !== null);
 
-            for (let i = 0; i < length + 1; i++) {
-                mesh.scale.x = domeWidth / Math.cos(roofInclineRad);
-                const shift = ref.current.geometry.boundingBox!.min.x;
-                ref.current.geometry.translate(-shift, 0, 0);
-                mesh.position.set(domeWidth/2, eavesHeight + secondHeightOffset + beamMaxHeight + domeHeight + 0.25 + hToAdd, i === 0 ? 0 : (-i));
-                mesh.rotation.set(0, Math.PI, -roofInclineRad)
-                ref.current.geometry.attributes.position.needsUpdate = true;
+            instances.forEach((instance) => {
+                instance.geometry.computeBoundingBox();
+                const shift = instance.geometry.boundingBox!.min.x;
+                instance.geometry.translate(-shift, 0, 0);
+                instance.geometry.attributes.position.needsUpdate = true;
+            });
+
+            for (let i = 0; i < count; i++) {
+                const xIndex = i % xCount;
+                const zIndex = Math.floor(i / xCount);
+
+                mesh.scale.x = coveringType === 'FC'
+                    ? 1
+                    : activeCoveringLength;
+                mesh.position.set(
+                    domeWidth / 2,
+                    eavesHeight
+                        + secondHeightOffset
+                        + beamMaxHeight
+                        + domeHeight
+                        + 0.25
+                        + hToAdd,
+                    -zIndex
+                );
+                mesh.rotation.set(0, Math.PI, -roofInclineRad);
+                mesh.translateX(xIndex);
                 mesh.updateMatrix();
-                (ref.current as InstancedMesh).setMatrixAt(i, mesh.matrix);
+                instances.forEach((instance) => {
+                    instance.setMatrixAt(i, mesh.matrix);
+                });
             }
-        }, []);
+
+            instances.forEach((instance) => {
+                instance.instanceMatrix.needsUpdate = true;
+            });
+        }, [activeCoveringLength, count, xCount]);
 
         return (
-            <instancedUniformsMesh ref={ref} args={[coveringGeometry, material, requiredValues.length + 1]}></instancedUniformsMesh>
+            <>
+                {supCoveringGeometry &&
+                    <instancedUniformsMesh
+                        ref={supCoveringRef}
+                        args={[supCoveringGeometry, material, count]}>
+                    </instancedUniformsMesh>
+                }
+                <instancedUniformsMesh
+                    ref={coveringRef}
+                    args={[coveringGeometry, material, count]}>
+                </instancedUniformsMesh>
+            </>
         )
     }
 

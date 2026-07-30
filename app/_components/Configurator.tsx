@@ -77,11 +77,12 @@ export default function Configurator() {
     const localPlaneRight = new THREE.Plane( new THREE.Vector3( 1, 0, 0 ), 0);
 
     const baseModel = useGLTF('/pilastro.glb');
-
     const structureModels = {
         domeCoveringSpherical: (baseModel.scene.children[26] as THREE.Mesh).geometry,
         domeCoveringRight: (baseModel.scene.children[10] as THREE.Mesh).geometry,
         domeCoveringLeft: (baseModel.scene.children[9] as THREE.Mesh).geometry,
+        domeCoveringFCRight: baseModel.scene.children[27] as THREE.Group,
+        domeCoveringFCLeft: baseModel.scene.children[28] as THREE.Group,
         domeCoveringLamRight: (baseModel.scene.children[23] as THREE.Mesh).geometry,
         domeCoveringLamLeft: (baseModel.scene.children[25] as THREE.Mesh).geometry,
         domePurlinsRight: (baseModel.scene.children[11] as THREE.Mesh).geometry,
@@ -95,6 +96,8 @@ export default function Configurator() {
         domePillarsLeft: (baseModel.scene.children[13] as THREE.Mesh).geometry,
         coveringLamRight: (baseModel.scene.children[22] as THREE.Mesh).geometry,
         coveringLamLeft: (baseModel.scene.children[24] as THREE.Mesh).geometry,
+        coveringFCRight: baseModel.scene.children[29] as THREE.Group,
+        coveringFCLeft: baseModel.scene.children[30] as THREE.Group,
         coveringRight: (baseModel.scene.children[3] as THREE.Mesh).geometry,
         coveringLeft: (baseModel.scene.children[4] as THREE.Mesh).geometry,
         purlinsOmega: (baseModel.scene.children[15] as THREE.Mesh).geometry,
@@ -184,8 +187,8 @@ export default function Configurator() {
                                     <PurlinsOmegaLeftDH material={matcapMaterial}/>
                                 </>
                             }
-                            <BeamsLeftDH material={matcapMaterial}/>
-                            <BeamsRightDH material={matcapMaterial}/>
+                            <BeamsLeftDH material={matcapMaterialClippedLeft}/>
+                            <BeamsRightDH material={matcapMaterialClippedRight}/>
                         </>
                     }
 

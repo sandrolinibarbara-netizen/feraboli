@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useRef} from "react";
+import React, {useEffect, useLayoutEffect, useMemo, useRef} from "react";
 import * as THREE from "three";
 import {InstancedMesh} from "three";
 import {useMeasurementsStore} from "@/app/_stores/measurements";
@@ -14,9 +14,20 @@ export default function BeamsLeftDH({material} : {material : THREE.Material}) {
     const width = useMeasurementsStore((state: State) => state.width);
     const length = useMeasurementsStore((state: State) => state.length);
     const interaxleLength = useMeasurementsStore((state: State) => state.interaxleLength);
+    const pillarsHeight = useMeasurementsStore((state: State) => state.pillarsHeight);
 
     const ref = useRef<THREE.Mesh|null>(null);
     const beamGeometry = baseModel?.beamsLeft;
+    const clipping = useMemo(() => {
+        const plane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0);
+        const clippedMaterial = material.clone();
+        clippedMaterial.clippingPlanes = [plane];
+
+        return {
+            material: clippedMaterial,
+            plane
+        };
+    }, [material]);
     const roofValues = getDefinedValues({
         beamLengthDH,
         eavesHeight,
@@ -24,8 +35,26 @@ export default function BeamsLeftDH({material} : {material : THREE.Material}) {
         width,
         length,
         interaxleLength,
-        pillars
+        pillars,
+        pillarsHeight
     });
+
+    useLayoutEffect(() => {
+        if (!roofValues) return;
+
+        const pillarIndex = Math.ceil(roofValues.pillars / 2) - 1;
+        const pillarPosition = roofValues.pillarsHeight[pillarIndex].position;
+        if (pillarPosition === undefined) return;
+
+        clipping.plane.setFromNormalAndCoplanarPoint(
+            new THREE.Vector3(-1, 0, 0),
+            new THREE.Vector3(pillarPosition - 0.095 - roofValues.width / 2, 0, 0)
+        );
+    }, [clipping, roofValues]);
+
+    useEffect(() => () => {
+        clipping.material.dispose();
+    }, [clipping]);
 
     if (!roofValues) return null;
 
@@ -54,7 +83,7 @@ export default function BeamsLeftDH({material} : {material : THREE.Material}) {
 
         return (
             <instancedUniformsMesh ref={ref}
-                                   args={[beamGeometry, material, (length / interaxleLength) + 1]}>
+                                   args={[beamGeometry, clipping.material, (length / interaxleLength) + 1]}>
             </instancedUniformsMesh>
         )
     }
