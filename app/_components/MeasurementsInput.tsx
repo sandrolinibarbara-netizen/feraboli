@@ -90,18 +90,34 @@ export default function MeasurementsInput() {
         }
     }
     function editSpans(n:number, side:string) {
+        // EXCEPTION: avoid 1 sail per side
         if((n === 0 && side === 'right' && measurements.spansRight === '2' && measurements.spansLeft === '1')
         || (n === 0 && side === 'left' && measurements.spansLeft === '2' && measurements.spansRight === '1')) {
             return;
         }
+
+        // EXCEPTION: avoid left sails if right sails are 1 or less
+        if(n === 1 && side === 'left'
+            && (measurements.spansLeft === '' || measurements.spansLeft === '1')
+            && (measurements.spansRight === '' || measurements.spansRight === '1')) {
+            return;
+        }
+
+        if(n === 0 && side === 'left' && measurements.spansLeft === '' && measurements.spansRight === '') {
+            return;
+        }
+
+
         switch(n) {
             case 0:
                 let newMinValue;
                 if(side === 'right') {
                     switch(measurements.spansRight) {
-                        case '1':
                         case '':
                             newMinValue = '10';
+                            break;
+                        case '1':
+                            newMinValue = '';
                             break;
                         default:
                             newMinValue = (Number(measurements.spansRight) - 1).toString();
@@ -109,9 +125,11 @@ export default function MeasurementsInput() {
                     setMeasurements({...measurements, spansRight: newMinValue});
                 } else {
                     switch(measurements.spansLeft) {
-                        case '1':
                         case '':
                             newMinValue = '10';
+                            break;
+                        case '1':
+                            newMinValue = '';
                             break;
                         default:
                             newMinValue = (Number(measurements.spansLeft) - 1).toString();
@@ -124,6 +142,9 @@ export default function MeasurementsInput() {
                 if(side === 'right') {
                     switch(measurements.spansRight) {
                         case '10':
+                            newMaxValue = '';
+                            break;
+                        case '':
                             newMaxValue = '1';
                             break;
                         default:
@@ -133,6 +154,9 @@ export default function MeasurementsInput() {
                 } else {
                     switch(measurements.spansLeft) {
                         case '10':
+                            newMaxValue = '';
+                            break;
+                        case '':
                             newMaxValue = '1';
                             break;
                         default:
@@ -418,7 +442,6 @@ export default function MeasurementsInput() {
 
         return label;
     }
-
     function validateInput(e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>) {
         // MANCANO:
         // - NO INIZIO CON PUNTO
@@ -450,6 +473,42 @@ export default function MeasurementsInput() {
 
     const calc = useCallback((e?: React.SubmitEvent<HTMLFormElement>) => {
         e?.preventDefault();
+
+        if(measurements.pillars === '10' && measurements.spansRight === '') {
+            return;
+        }
+
+       if(measurements.pillars === '') {
+           return;
+       }
+
+       if(measurements.pillars !== '10' && measurements.pitches === '') {
+           return;
+       }
+
+       if(Number(measurements.pillars) > 2 && measurements.pillars !== '10' && measurements.structureType === '') {
+           return;
+       }
+
+       if(measurements.pillars !== '10' && measurements.pillars !== '1'
+           && !(measurements.pillars === '2' && measurements.pitches === 'M')
+           && !(measurements.pillars === '3' && measurements.pitches === 'S')
+           && measurements.dome === '') {
+           return;
+       }
+
+       if(measurements.coveringType === '5G' && measurements.coveringSubType === '') {
+           return;
+       }
+
+        if(measurements.coveringType === '5G' && (measurements.thicknessTop === '' || measurements.thicknessBottom === '')) {
+            return;
+        }
+
+        if(measurements.coveringType === 'L' && measurements.thicknessTop === '') {
+            return;
+        }
+
         setBaseMeasurements(measurements);
     }, [measurements, setBaseMeasurements]);
 
@@ -629,6 +688,7 @@ export default function MeasurementsInput() {
                                             <label className="flex flex-col uppercase text-xsm font-semibold">Seconda altezza
                                                 <div className="relative font-jet text-xs lowercase after:content-['m'] after:absolute after:top-[14px] after:left-[90%]"></div>
                                                     <input
+                                                        required
                                                         className="mt-2 p-1 pl-2 rounded-lg border-strokes border-2 font-jet text-xs focus:border-primary focus:outline-none focus:ring-0"
                                                         value={measurements.secondHeight}
                                                         name="secondHeight"
@@ -667,6 +727,7 @@ export default function MeasurementsInput() {
                                                 <div
                                                     className="relative font-jet text-xs after:content-['%'] after:absolute after:top-[14px] after:left-[90%]"></div>
                                                 <input
+                                                    required
                                                     className="mt-2 p-1 pl-2 font-jet text-xs rounded-lg border-strokes border-2 focus:border-primary focus:outline-none focus:ring-0"
                                                     value={measurements.roofIncline}
                                                     name="roofIncline"
@@ -680,6 +741,7 @@ export default function MeasurementsInput() {
                                             <div
                                                 className="relative font-jet text-xs lowercase after:content-['m'] after:absolute after:top-[14px] after:left-[90%]"></div>
                                             <input
+                                                required
                                                 className="mt-2 p-1 pl-2 rounded-lg border-strokes border-2 font-jet text-xs focus:border-primary focus:outline-none focus:ring-0"
                                                 value={measurements.eavesHeight}
                                                 name="eavesHeight"
@@ -691,6 +753,7 @@ export default function MeasurementsInput() {
                                             <div
                                                 className="relative font-jet text-xs lowercase after:content-['m'] after:absolute after:top-[14px] after:left-[90%]"></div>
                                             <input
+                                                required
                                                 className="mt-2 p-1 pl-2 rounded-lg border-strokes border-2 font-jet text-xs focus:border-primary focus:outline-none focus:ring-0"
                                                 value={measurements.length}
                                                 name="length"
@@ -702,6 +765,7 @@ export default function MeasurementsInput() {
                                             <div
                                                 className="relative font-jet text-xs lowercase after:content-['m'] after:absolute after:top-[14px] after:left-[90%]"></div>
                                             <input
+                                                required
                                                 className="mt-2 p-1 pl-2 rounded-lg border-strokes border-2 font-jet text-xs focus:border-primary focus:outline-none focus:ring-0"
                                                 value={measurements.width}
                                                 name="width"
@@ -714,6 +778,7 @@ export default function MeasurementsInput() {
                                             <div
                                                 className="relative font-jet text-xs lowercase after:content-['m'] after:absolute after:top-[14px] after:left-[90%]"></div>
                                             <input
+                                                required
                                                 className="mt-2 p-1 pl-2 rounded-lg border-strokes border-2 font-jet text-xs focus:border-primary focus:outline-none focus:ring-0"
                                                 value={measurements.interaxleLength}
                                                 name="interaxleLength"
@@ -801,13 +866,17 @@ export default function MeasurementsInput() {
                                             <h4 className="flex flex-col uppercase text-xsm font-semibold">Tipologia:</h4>
                                             <div className="flex gap-4 mt-2">
                                                 <label className="flex items-center gap-2">
-                                                    <input onChange={(e) => setMeasurements({...measurements, purlin: e.target.value})}
+                                                    <input
+                                                           required
+                                                           onChange={(e) => setMeasurements({...measurements, purlin: e.target.value})}
                                                            value="normal"
                                                            className="accent-primary" type="radio" name="purlins-type"/>
                                                     Normali
                                                 </label>
                                                 <label className="flex items-center gap-2">
-                                                    <input onChange={(e) => setMeasurements({...measurements, purlin: e.target.value})}
+                                                    <input
+                                                           required
+                                                           onChange={(e) => setMeasurements({...measurements, purlin: e.target.value})}
                                                            value="light"
                                                            className="accent-primary" type="radio" name="purlins-type"/>
                                                     In luce
@@ -819,14 +888,18 @@ export default function MeasurementsInput() {
                                             <h4 className="flex flex-col uppercase text-xsm font-semibold">Forma:</h4>
                                             <div className="flex gap-4 mt-2">
                                                 <label className="flex items-center gap-2">
-                                                    <input onChange={(e) => setMeasurements({...measurements, purlinShape: e.target.value})}
+                                                    <input
+                                                           required
+                                                           onChange={(e) => setMeasurements({...measurements, purlinShape: e.target.value})}
                                                            value="c"
                                                            className="accent-primary" type="radio"
                                                            name="purlins-shape"/>
                                                     C
                                                 </label>
                                                 <label className="flex items-center gap-2">
-                                                    <input onChange={(e) => setMeasurements({...measurements, purlinShape: e.target.value})}
+                                                    <input
+                                                           required
+                                                           onChange={(e) => setMeasurements({...measurements, purlinShape: e.target.value})}
                                                            value="omega"
                                                            className="accent-primary" type="radio"
                                                            name="purlins-shape"/>
@@ -839,8 +912,6 @@ export default function MeasurementsInput() {
                             </div>
 
                             <div aria-hidden className="bg-primary h-[2px] w-full"></div>
-
-                            {/*PER ORA QUESTI SONO FINTI*/}
 
                             <div className="mt-4">
                                 <Accordion
@@ -874,6 +945,7 @@ export default function MeasurementsInput() {
                                                 }
                                             }}>
                                                 <Select
+                                                    required
                                                     id="demo-simple-select"
                                                     value={measurements.coveringType}
                                                     onChange={(e) => editInsulation(e.target.value)}
@@ -893,7 +965,7 @@ export default function MeasurementsInput() {
                                                     }}
                                                 >
                                                     <MenuItem value="5G">5 greche</MenuItem>
-                                                    <MenuItem value="FC">Finto coppo</MenuItem>
+                                                    <MenuItem disabled value="FC">Finto coppo</MenuItem>
                                                     <MenuItem value="L">Lamiera</MenuItem>
                                                 </Select>
                                             </FormControl>
@@ -956,6 +1028,7 @@ export default function MeasurementsInput() {
                                                 <label
                                                     className="flex gap-4 items-center justify-between text-xs whitespace-nowrap">Spessore
                                                     <input
+                                                        required
                                                         value={measurements.thicknessTop}
                                                         name="thicknessTop"
                                                         onChange={(e) => validateInput(e)}
@@ -971,6 +1044,7 @@ export default function MeasurementsInput() {
                                                 <div
                                                     className="relative font-jet lowercase after:content-['mm'] after:absolute after:top-[14px] after:left-[86%]"></div>
                                                 <input
+                                                    required
                                                     className="mt-2 p-1 pl-2 rounded-lg border-strokes border-2 font-jet focus:border-primary focus:outline-none focus:ring-0"
                                                 />
                                             </label>

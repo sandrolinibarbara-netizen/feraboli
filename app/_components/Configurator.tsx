@@ -127,6 +127,8 @@ export default function Configurator() {
     const redMatcapMaterial = new THREE.MeshMatcapMaterial({matcap: redMatcap});
     const redMatcapMaterialClippedLeft = new THREE.MeshMatcapMaterial({matcap: redMatcap, clippingPlanes: [localPlaneLeft]});
     const redMatcapMaterialClippedRight = new THREE.MeshMatcapMaterial({matcap: redMatcap, clippingPlanes: [localPlaneRight]});
+    const redMatcapMaterialClippedLeftTransp = new THREE.MeshMatcapMaterial({matcap: redMatcap, clippingPlanes: [localPlaneLeft], transparent: true, opacity: 0.75});
+    const redMatcapMaterialClippedRightTransp = new THREE.MeshMatcapMaterial({matcap: redMatcap, clippingPlanes: [localPlaneRight], transparent: true, opacity: 0.75});
 
     return (
         <>
@@ -137,7 +139,7 @@ export default function Configurator() {
                 <>
                     {domeType === 'S'
                         ? <>
-                            <DomeCoveringMono material={matcapMaterial}/>
+                            <DomeCoveringMono material={redMatcapMaterial}/>
                             {purlinShape === 'c'
                                 ? <DomePurlinsMono material={matcapMaterial}/>
                                 : <DomePurlinsOmegaMono material={matcapMaterial}/>
@@ -148,8 +150,8 @@ export default function Configurator() {
                             {domeType === 'SP'
                                 ? <DomeCoveringSpherical material={redMatcapMaterial}/>
                                 : <>
-                                    <DomeCoveringLeft material={redMatcapMaterialClippedLeft}/>
-                                    <DomeCoveringRight material={redMatcapMaterialClippedRight}/>
+                                    <DomeCoveringLeft material={domeType === 'DT' ? redMatcapMaterialClippedLeftTransp : redMatcapMaterialClippedLeft}/>
+                                    <DomeCoveringRight material={domeType === 'DT' ? redMatcapMaterialClippedRightTransp : redMatcapMaterialClippedRight}/>
                                   </>
                             }
                             {purlinShape === 'c'
